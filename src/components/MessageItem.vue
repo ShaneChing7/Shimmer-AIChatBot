@@ -4,7 +4,7 @@
     <div v-if="message.sender === 'ai'" class="flex items-start max-w-[70%] gap-3">
       <Bot class="shrink-0 size-8 mt-0.5"></Bot>
       <div class="flex flex-col">
-        <div class="bg-white-200 text-gray-900 dark:text-white rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
+        <div class="bg-white-200 text-gray-900 dark:text-white dark:bg-muted rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
           <!-- 显示加载动画或实际内容 -->
           <div v-if="isThinking" class="flex items-center gap-2 py-1">
             <div class="flex gap-1">
@@ -78,7 +78,7 @@
           <AvatarFallback>{{ userStore.username[0] }}</AvatarFallback>
       </Avatar>
       <div class="flex flex-col items-end">
-        <div class="bg-black text-white rounded-2xl rounded-br-sm px-4 py-2 text-sm leading-relaxed shadow-sm">
+        <div class="bg-black text-white dark:bg-gray-500 rounded-2xl rounded-br-sm px-4 py-2 text-sm leading-relaxed shadow-sm">
           <div v-html="message.content" class="rendered-content"></div>
         </div>
         <div class="text-xs text-gray-400 mt-1 mr-2">

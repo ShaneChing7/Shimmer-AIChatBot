@@ -25,7 +25,7 @@
          border rounded-lg 
          bg-gray-50 dark:bg-gray-700 
          border-gray-300 dark:border-gray-600 
-         focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 
+         focus:outline-none focus:ring-1 focus:ring-black focus:border-black
          transition-all duration-200;" :class="{ 'border-red-500 ring-red-500': errors.username }" />
           </div>
 
@@ -39,7 +39,7 @@
          border rounded-lg 
          bg-gray-50 dark:bg-gray-700 
          border-gray-300 dark:border-gray-600 
-         focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 
+         focus:outline-none focus:ring-1 focus:ring-black focus:border-black
          transition-all duration-200;" :class="{ 'border-red-500 ring-red-500': errors.password }" />
           </div>
 
@@ -54,7 +54,7 @@
          border rounded-lg 
          bg-gray-50 dark:bg-gray-700 
          border-gray-300 dark:border-gray-600 
-         focus:outline-none focus:ring-1 focus:ring-sky-500 focus:border-sky-500 
+         focus:outline-none focus:ring-1 focus:ring-black focus:border-black
          transition-all duration-200;" :class="{ 'border-red-500 ring-red-500': errors.confirmPassword }" />
           </div>
           
@@ -65,13 +65,13 @@
 
       <div class="mt-6 flex flex-col items-center">
         <div @click="handleSubmit" :disabled="isLoading" class="flex justify-center w-full py-2.5 rounded-lg font-semibold transition-colors duration-200 
-                 text-white bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 
+                 text-white bg-black hover:bg-gray-900 dark:bg-white dark:hover:bg-gray-200 
                  disabled:bg-gray-400 disabled:cursor-not-allowed">
           <span v-if="isLoading" class="flex items-center justify-center">
             <Loader2 :size="20" class="animate-spin mr-2" />
             处理中...
           </span>
-          <span v-else>{{ isLoginMode ? '立即登录' : '立即注册' }}</span>
+          <span class="dark:text-black" v-else>{{ isLoginMode ? '立即登录' : '立即注册' }}</span>
         </div>
 
         <div class="mt-4 text-sm text-center">
@@ -79,7 +79,7 @@
             {{ isLoginMode ? '还没有账号？' : '已有账号？' }}
           </span>
           <button type="button" @click="toggleMode"
-            class=" cursor-pointer ml-1 text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors">
+            class=" cursor-pointer ml-1 text-black hover:text-gray-900 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors">
             {{ isLoginMode ? '去注册' : '去登录' }}
           </button>
         </div>

@@ -57,7 +57,7 @@
             <input 
               v-model="input" 
               @keydown.enter="sendMessage" 
-              :disabled="isLoading" 
+              :disabled="loading" 
               placeholder="输入你的问题..."
               class="w-full rounded-lg px-4 py-2 outline-none text-foreground" 
             />
@@ -116,8 +116,8 @@
             <div
               class="flex items-center justify-center rounded-full hover:bg-muted transition-colors duration-75 cursor-pointer "
               style="width: 40px; height: 40px;"
-              @click="!isLoading && sendMessage()"
-              :class="isLoading ? 'opacity-50 pointer-events-none' : ''"
+              @click="!loading && sendMessage()"
+              :class="loading ? 'opacity-50 pointer-events-none' : ''"
             >
               <Send class="size-6 text-gray-500"  />
             </div>
@@ -137,6 +137,7 @@ import MessageList from './MessageList.vue'
 import { toast } from 'vue-sonner';
 import { useChatStore } from '@/store/modules/chat';
 import useUserStore from '@/store/modules/user';
+import { storeToRefs } from 'pinia';
 
 
 const chatStore = useChatStore();
@@ -146,15 +147,14 @@ const isLoggedIn = computed(() => userStore.isLoggedIn);
 // 绑定状态和 Getter
 const activeConversation = computed(() => chatStore.currentSession); 
 const currentMessages = computed(() => chatStore.currentMessages);
-const rawIsLoading = computed(() => chatStore.loading)
-const isLoading = ref(rawIsLoading.value)
+const {loading} = storeToRefs(chatStore)
 
 
 // 消息输入和发送逻辑
 const input = ref('')
 
 const sendMessage = async () => {
-  if (isLoading.value) {
+  if (loading.value) {
     toast.warning('会话数据正在加载中，请稍候再发送。');
     return;
   }
@@ -188,7 +188,7 @@ const sendMessage = async () => {
 // 语言选项数据
 const modelOptions = [
   { value: 'deepseek', label: 'DeepSeek' },
-  { value: 'gemini', label: 'Gemini' },
+  // { value: 'gemini', label: 'Gemini' },
 ];
 
 // 下拉框状态

@@ -1,11 +1,11 @@
 <template>
   <div
-    class=" mt-0.5 w-55 group relative flex items-center gap-3 rounded-md px-3 py-2 cursor-pointer transition-colors"
+    class=" mt-0.5 w-55 group relative flex items-center gap-3 rounded-md px-3 py-2 cursor-pointer transition-colors select-none"
     
     :class="props.isActive // ✅ 核心状态逻辑
       ? [ 
           // 状态 1: 选中 (Active) 时的样式
-          'bg-sidebar-accent text-sidebar-accent-foreground',
+          'bg-stone-200 text-sidebar-accent-foreground',
           // 选中状态下，鼠标悬停时保持相同背景，或略微加深
           
         ]
@@ -13,7 +13,7 @@
           // 状态 2: 未选中 (Inactive) 时的样式
           'text-sidebar-foreground',
           // 未选中状态下，鼠标悬停时的样式
-          'hover:bg-sidebar-accent/30 dark:hover:bg-sidebar-accent/20' // 使用更柔和的主题色悬停效果
+          'hover:bg-stone-100 dark:hover:bg-sidebar-accent/20' // 使用更柔和的主题色悬停效果
         ]"
     
     @click="selectSession" 
@@ -31,19 +31,19 @@
       class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 ml-auto"
       @click.stop
     >
-      <button
+      <div
         class="size-6 shrink-0 flex items-center justify-center rounded-md hover:bg-accent text-sidebar-foreground/70 hover:text-sidebar-foreground"
         @click="handleUpdate"
       >
         <Pencil class="size-3" />
-      </button>
+      </div>
 
-      <button
+      <div
         class="size-6 shrink-0 flex items-center justify-center rounded-md hover:bg-accent text-sidebar-foreground/70 hover:text-sidebar-foreground"
         @click="handleDelete"
       >
         <Trash2 class="size-3" />
-      </button>
+      </div>
     </div>
   </div>
   
@@ -59,9 +59,7 @@ import { defineProps, defineEmits,ref } from 'vue';
 import { MessageSquareText , Trash2, Pencil  } from 'lucide-vue-next'
 import { formatSessionTime } from '@/utils/time';
 import type { ChatSession } from '@/api/chat/type';
-import { useChatStore } from '@/store/modules/chat';
 import EditTitleModal from './EditTitleModal.vue';
-const chatStore = useChatStore()
 
 let titleModalVisible = ref<boolean>(false)
 const props = defineProps<{
@@ -99,4 +97,11 @@ const handleUpdate = () => {
 </script>
 
 <style scoped>
+/* 确保 Session 组件也禁用文本选择 */
+.select-none {
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
 </style>
