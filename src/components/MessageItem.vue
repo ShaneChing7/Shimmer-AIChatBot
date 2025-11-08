@@ -2,71 +2,147 @@
   <div class="flex w-full mb-4 px-4 mt-2.5" :class="message.sender === 'user' ? 'justify-end' : 'justify-start'">
     <!-- AI 消息 -->
     <div v-if="message.sender === 'ai'" class="flex items-start max-w-[70%] gap-3">
-      <Bot class="shrink-0 size-8 mt-0.5"></Bot>
-      <div class="flex flex-col">
+      <Sparkle class="shrink-0 size-7 mt-0.5"></Sparkle>
+      <div class="flex flex-col w-full">
         <div class="bg-white-200 text-gray-900 dark:text-white dark:bg-muted rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
-          <!-- 显示加载动画或实际内容 -->
-          <div v-if="isThinking" class="flex items-center gap-2 py-1">
+          <!-- 🎯 只有在完全没有内容时才显示"正在输入" -->
+          <div v-if="isCompletelyEmpty" class="flex items-center gap-2 py-1">
             <div class="flex gap-1">
               <div class="typing-cursor">
                 <span>AI 正在输入</span>
                 <div class="cursor"></div>
               </div>
             </div>
-            <!-- <span class="text-gray-500 text-xs">AI 正在思考...</span> -->
           </div>
-          <div v-else  class="rendered-content m-1">
-            <Response>{{ message.content }}</Response>
+          
+          <!-- 🎯 有任何内容就显示 -->
+          <div v-else class="w-full">
+            <!-- 🎯 推理过程区域 (如果存在) -->
+            <div v-if="hasReasoningContent" class="reasoning-section mb-3">
+              <div 
+                class="reasoning-header flex items-center gap-2 p-2 bg-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg cursor-pointer  dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-200"
+                @click="toggleReasoning"
+              >
+                
+                <Atom   
+                  class="w-4 h-4 text-gray-500" 
+                />
+                
+                <div class="flex items-center gap-2 flex-1">
+                  <span class="text-xs font-semibold text-black dark:text-blue-400">
+                    思考过程
+                  </span>
+                  
+                  <!-- 🎯 实时推理状态指示器 -->
+                  <div v-if="isReasoningStreaming" class="flex items-center gap-1">
+                    <div class="flex gap-0.5">
+                      <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                      <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                      <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                    </div>
+                    <span class="text-xs text-gray-400 font-medium">推理中</span>
+                  </div>
+                  
+                  <!-- 推理完成指示 -->
+                  <span v-else class="text-xs text-gray-500 dark:text-gray-400">
+                    ({{ reasoningCharCount }} 字)
+                  </span>
+                </div>
+
+                <ChevronRight    
+                  class="w-4 h-4 text-gray-500 transition-transform duration-400" 
+                  :class="{ 'rotate-90 ': isReasoningExpanded }"
+                />
+              </div>
+              
+              <!-- 🎯 推理内容 - 支持流式展示 -->
+              <div 
+                v-show="isReasoningExpanded"
+                class="reasoning-content mt-2 p-3 bg-white dark:from-gray-800 dark:to-gray-750 rounded-lg  relative overflow-hidden"
+              >
+                <!-- 流式输出的推理内容 -->
+                <div class="text-xs text-gray-500 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
+                  {{ message.reasoning_content }}
+                  <!-- 🎯 推理中显示光标 -->
+                  <span v-if="isReasoningStreaming" class="inline-block w-1.5 h-3.5 bg-blue-500 ml-0.5 animate-pulse"></span>
+                </div>
+              </div>
+            </div>
+            
+            <!-- 🎯 正常回复内容区域 -->
+            <div class="answer-content">
+              <!-- 如果正在输出答案，显示渐入动画 -->
+              <div 
+                v-if="hasAnswerContent"
+                class="rendered-content m-1"
+                :class="{ 'streaming-content': isAnswerStreaming }"
+              >
+                <Response>{{ message.content }}</Response>
+                <!-- 🎯 回答中显示光标 -->
+                <span v-if="isAnswerStreaming" class="inline-block w-1.5 h-3.5 bg-gray-600 dark:bg-gray-300 ml-0.5 animate-pulse"></span>
+              </div>
+              
+              <!-- 🎯 如果只有推理内容但还没有答案内容 -->
+              <div v-else-if="hasReasoningContent && !hasAnswerContent" class="m-1 py-2">
+                <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <div class="flex gap-1">
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
+                    <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
+                  </div>
+                  <span class="text-xs">正在生成回答...</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+        
         <div class="text-xs text-gray-400 mt-2 ml-2 flex">
-          <div class=" mt-1">
+          <div class="mt-1">
             {{ formatSessionTime(message.created_at || new Date().toISOString()) }}
           </div>
           
           <div class="flex-1"></div>
           <div class="flex gap-x-3 mr-2">
             <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
-                  <MessageSquareShare :size="16"></MessageSquareShare>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" class=" bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                <p>分享</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
+                    <MessageSquareShare :size="16"></MessageSquareShare>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
+                  <p>分享</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('retry')">
-                  <RotateCw :size="16"></RotateCw>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                <p>重试</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('retry')">
+                    <RotateCw :size="16"></RotateCw>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
+                  <p>重试</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
 
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger as-child>
-                <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
-                  <Copy :size="16"></Copy>
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                <p>复制</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
+                    <Copy :size="16"></Copy>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
+                  <p>复制</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
-          
         </div>
       </div>
     </div>
@@ -74,8 +150,8 @@
     <!-- 用户消息 -->
     <div v-else class="flex items-start max-w-[70%] gap-3 flex-row-reverse">
       <Avatar class="w-10 h-10">
-          <AvatarImage :src="userStore.avatar" alt="@unovue" />
-          <AvatarFallback>{{ userStore.username[0] }}</AvatarFallback>
+        <AvatarImage :src="userStore.avatar" alt="@unovue" />
+        <AvatarFallback>{{ userStore.username[0] }}</AvatarFallback>
       </Avatar>
       <div class="flex flex-col items-end">
         <div class="bg-black text-white dark:bg-gray-500 rounded-2xl rounded-br-sm px-4 py-2 text-sm leading-relaxed shadow-sm">
@@ -91,11 +167,11 @@
 
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { defineProps, computed } from 'vue'
+import { defineProps, computed, ref } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
 import type { ChatMessage } from '@/api/chat/type'
-import { Bot,Copy,RotateCw,MessageSquareShare    } from 'lucide-vue-next'
+import { Bot, Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle} from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,
@@ -103,126 +179,121 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+
 const userStore = useUserStore()
 
 const props = defineProps<{
   message: ChatMessage & { text?: string }
 }>()
 
-// 判断是否正在思考 (AI 消息且内容为空)
-const isThinking = computed(() => {
-  return props.message.sender === 'ai' && (!props.message.content || props.message.content.trim() === '')
+// 🎯 推理过程展开状态 - 默认折叠
+const isReasoningExpanded = ref(false)
+
+// 🎯 判断是否完全没有内容（既没有推理也没有回答）
+const isCompletelyEmpty = computed(() => {
+  const hasReasoning = props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
+  const hasContent = props.message.content && props.message.content.trim() !== ''
+  return props.message.sender === 'ai' && !hasReasoning && !hasContent
 })
+
+// 🎯 是否有推理内容
+const hasReasoningContent = computed(() => {
+  return props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
+})
+
+// 🎯 是否有回答内容
+const hasAnswerContent = computed(() => {
+  return props.message.content && props.message.content.trim() !== ''
+})
+
+// 🎯 推理过程是否正在流式输出
+// 判断依据：有推理内容，但最终消息还没收到（id 为临时负数）
+const isReasoningStreaming = computed(() => {
+  return props.message.id < 0 && hasReasoningContent.value && !hasAnswerContent.value
+})
+
+// 🎯 回答是否正在流式输出
+const isAnswerStreaming = computed(() => {
+  return hasAnswerContent.value && props.message.id < 0
+})
+
+// 🎯 推理内容字符数
+const reasoningCharCount = computed(() => {
+  return props.message.reasoning_content?.length || 0
+})
+
+// 🎯 切换推理过程展开/折叠
+const toggleReasoning = () => {
+  isReasoningExpanded.value = !isReasoningExpanded.value
+}
 
 /**
  * ⚡ 动作处理函数
- * @param actionType 动作类型: 'share', 'retry', 'copy'
  */
 const handleAction = async (actionType: 'share' | 'retry' | 'copy') => {
   switch (actionType) {
     case 'share':
-      // --- 分享逻辑 ---
       handleShare();
       break;
-
     case 'retry':
-      // --- 重试逻辑 ---
       handleRetry();
       break;
-
     case 'copy':
-      // --- 复制逻辑 ---
       handleCopy();
       break;
-
     default:
       console.warn(`未知的操作类型: ${actionType}`);
   }
 }
 
-/**
- * 分享功能逻辑
- * 尝试使用 Web Share API (如果可用) 或回退到复制链接
- */
 const handleShare = () => {
-  const shareText = `来自 AI 的消息: ${props.message.content}`; // 定义分享内容
+  const shareText = `来自 AI 的消息: ${props.message.content}`;
   
   if (navigator.share) {
-    // 检查浏览器是否支持 Web Share API
     navigator.share({
       title: 'AI 聊天记录分享',
       text: shareText,
-      url: window.location.href // 可以是当前聊天页面的链接
+      url: window.location.href
     })
     .then(() => {
-      // showToast('分享成功!');
       console.log('分享成功');
     })
     .catch((error) => {
-      // showToast('分享失败: ' + error.name);
       console.error('分享失败', error);
-      // 分享失败时，可以尝试回退到复制内容或链接
-      // fallbackCopy(shareText); 
     });
   } else {
-    // 浏览器不支持 Web Share API 时的回退方案
-    // showToast('您的浏览器不支持 Web Share API，已复制内容。');
-    console.log('浏览器不支持 Web Share API，回退到复制功能');
-    // 强制执行复制逻辑作为回退
+    console.log('浏览器不支持 Web Share API,回退到复制功能');
     handleCopy();
   }
 }
 
-/**
- * 重试功能逻辑
- * 通常需要重新调用生成消息的 API
- */
 const handleRetry = () => {
-  // 关键步骤：通知父组件或 Vuex/Pinia Store 重新发送请求
-  // 
-  // 假设通过 $emit 或自定义事件通知外部重新生成此消息
-  // ⚠️ 注意：这里您可能需要将组件修改为 emit 事件或使用 store
-  // 
-  // 示例: 
-  // emit('retryMessage', props.message.id); 
-  // 或者:
-  // chatStore.retryMessage(props.message.id);
-  
-  // 简化的日志输出
   console.log(`正在重试消息 ID: ${props.message.id}`);
-  // showToast('正在重新生成回答...');
-  // 实际项目中，通常会触发一个 API 请求
 }
 
-/**
- * 复制功能逻辑
- * 将消息内容复制到剪贴板
- */
 const handleCopy = async () => {
-  const contentToCopy = props.message.content || '';
+  let contentToCopy = props.message.content || '';
+  
+  // 如果有推理过程，可以选择一起复制
+  if (props.message.reasoning_content) {
+    contentToCopy = `【思考过程】\n${props.message.reasoning_content}\n\n【回答】\n${contentToCopy}`;
+  }
 
   if (!contentToCopy) {
-    // showToast('没有内容可以复制。');
     return;
   }
 
   try {
-    // 使用 Clipboard API
     await navigator.clipboard.writeText(contentToCopy);
-    // showToast('内容已复制到剪贴板！');
     console.log('内容已复制');
   } catch (err) {
-    // showToast('复制失败，请手动复制。');
     console.error('复制到剪贴板失败:', err);
-    // 备用方案（例如使用 document.execCommand('copy')，但已不推荐）
   }
 }
-
 </script>
 
 <style scoped>
-/* 加载动画 - 跳动的点 */
-/* 2. 打字机光标 */
+/* 打字机光标动画 */
 .typing-cursor {
   display: flex;
   align-items: center;
@@ -239,12 +310,9 @@ const handleCopy = async () => {
 }
 
 @keyframes blink {
-
-  0%,
-  100% {
+  0%, 100% {
     opacity: 1;
   }
-
   50% {
     opacity: 0;
   }
@@ -255,243 +323,106 @@ const handleCopy = async () => {
   word-wrap: break-word;
   overflow-wrap: break-word;
 }
+
+/* 🎯 推理区域淡入动画 */
+.reasoning-section {
+  animation: fadeInSlide 0.3s ease-out;
+}
+
+@keyframes fadeInSlide {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 🎯 推理内容展开/收起动画 */
+.reasoning-content {
+  max-height: 400px;
+  overflow-y: auto;
+  animation: expandDown 0.3s ease-out;
+}
+
+@keyframes expandDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 400px;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+}
+
+/* 🎯 流式内容淡入 */
+.streaming-content {
+  animation: contentFadeIn 0.2s ease-in;
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* 美化滚动条 */
+.reasoning-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+
+.reasoning-content::-webkit-scrollbar-thumb {
+  background: #e5e5e5;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+.reasoning-content::-webkit-scrollbar-thumb:hover {
+  background: #dcdcdc
+}
+
+/* 🎯 光标闪烁动画 */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* 🎯 弹跳动画 */
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* 深色模式优化 */
+.dark .reasoning-content {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.8), rgba(17, 24, 39, 0.9));
+}
+
+/* 推理标题悬停效果 */
+.reasoning-header {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.reasoning-header:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
 </style>
-
-<!-- 动画效果 -->
-
-<!-- /* 1. 跳动的点 */
-    .bouncing-dots {
-      display: flex;
-      gap: 8px;
-    }
-
-    .bouncing-dots span {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      animation: bounce 1.4s infinite ease-in-out both;
-    }
-
-    .bouncing-dots span:nth-child(1) { animation-delay: -0.32s; }
-    .bouncing-dots span:nth-child(2) { animation-delay: -0.16s; }
-
-    @keyframes bounce {
-      0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
-      40% { transform: scale(1); opacity: 1; }
-    }
-
-    /* 2. 打字机光标 */
-    .typing-cursor {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .cursor {
-      width: 2px;
-      height: 20px;
-      background: #667eea;
-      animation: blink 1s infinite;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
-    /* 3. 波浪线 */
-    .wave-dots {
-      display: flex;
-      gap: 6px;
-    }
-
-    .wave-dots span {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #667eea;
-      animation: wave 1.2s ease-in-out infinite;
-    }
-
-    .wave-dots span:nth-child(1) { animation-delay: 0s; }
-    .wave-dots span:nth-child(2) { animation-delay: 0.1s; }
-    .wave-dots span:nth-child(3) { animation-delay: 0.2s; }
-    .wave-dots span:nth-child(4) { animation-delay: 0.3s; }
-    .wave-dots span:nth-child(5) { animation-delay: 0.4s; }
-
-    @keyframes wave {
-      0%, 60%, 100% { transform: translateY(0); }
-      30% { transform: translateY(-15px); }
-    }
-
-    /* 4. 旋转圆圈 */
-    .spinning-circle {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e0e0e0;
-      border-top-color: #667eea;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* 5. 脉冲圆环 */
-    .pulse-ring {
-      position: relative;
-      width: 40px;
-      height: 40px;
-    }
-
-    .pulse-ring::before,
-    .pulse-ring::after {
-      content: '';
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      border: 3px solid #667eea;
-      border-radius: 50%;
-      animation: pulse 2s ease-out infinite;
-    }
-
-    .pulse-ring::after {
-      animation-delay: 1s;
-    }
-
-    @keyframes pulse {
-      0% {
-        transform: scale(0.5);
-        opacity: 1;
-      }
-      100% {
-        transform: scale(1.5);
-        opacity: 0;
-      }
-    }
-
-    /* 6. 渐变条 */
-    .gradient-bar {
-      width: 150px;
-      height: 4px;
-      background: linear-gradient(90deg, 
-        transparent, 
-        #667eea 50%, 
-        transparent
-      );
-      background-size: 200% 100%;
-      animation: shimmer 1.5s infinite;
-      border-radius: 2px;
-    }
-
-    @keyframes shimmer {
-      0% { background-position: -200% 0; }
-      100% { background-position: 200% 0; }
-    }
-
-    /* 7. 弹跳小球 */
-    .bouncing-ball {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      animation: ball-bounce 0.6s cubic-bezier(0.45, 0, 0.55, 1) infinite;
-    }
-
-    @keyframes ball-bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-30px); }
-    }
-
-    /* 8. 呼吸光晕 */
-    .breathing-glow {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      animation: glow 2s ease-in-out infinite;
-    }
-
-    @keyframes glow {
-      0%, 100% {
-        box-shadow: 0 0 10px rgba(102, 126, 234, 0.5);
-        transform: scale(1);
-      }
-      50% {
-        box-shadow: 0 0 30px rgba(102, 126, 234, 0.8);
-        transform: scale(1.1);
-      }
-    }
-
-    <div class="card">
-      <div class="card-title">1. 跳动的点 (推荐)</div>
-      <div class="animation-container">
-        <div class="bouncing-dots">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">2. 打字机光标</div>
-      <div class="animation-container">
-        <div class="typing-cursor">
-          <span>AI 正在输入</span>
-          <div class="cursor"></div>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">3. 波浪线</div>
-      <div class="animation-container">
-        <div class="wave-dots">
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">4. 旋转圆圈</div>
-      <div class="animation-container">
-        <div class="spinning-circle"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">5. 脉冲圆环</div>
-      <div class="animation-container">
-        <div class="pulse-ring"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">6. 渐变条</div>
-      <div class="animation-container">
-        <div class="gradient-bar"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">7. 弹跳小球</div>
-      <div class="animation-container">
-        <div class="bouncing-ball"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">8. 呼吸光晕</div>
-      <div class="animation-container">
-        <div class="breathing-glow"></div>
-      </div>
-    </div> -->

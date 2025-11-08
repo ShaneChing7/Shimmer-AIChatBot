@@ -4,10 +4,15 @@ import { defineStore } from 'pinia'
 import type { LoginFormData, LoginResponseData, UserInfoResponseData,RegisterFormData,RegisterResponseData } from '@/api/user/type'
 // 把api中用request（axios）封装的登录，获取用户信息，登出的异步函数引入user仓库
 import { reqLogin, reqUserInfo,reqRegister } from '@/api/user'
-// 引入这个小仓库的相关类型
-import type { UserState } from './types/type'
 // 从utils中引入把从登录成功后得到的token存入localStorage的工具
 import { SET_TOKEN, GET_TOKEN, REMOVE_TOKEN } from '@/utils/token'
+
+interface UserState {
+	token: string | null
+	username: string
+	avatar: string
+}
+
 
 // define一个小仓库
 const useUserStore = defineStore('User', {

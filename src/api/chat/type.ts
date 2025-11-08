@@ -31,6 +31,7 @@ export interface ChatMessage {
   content: string // 消息内容 (可能是 Markdown 格式)
   content_type: 'text' | 'markdown' | 'image_url' // 匹配后端 ContentTypeChoices
   created_at: string // 创建时间
+  reasoning_content?: string;  // DeepSeek Reasoner 的推理过程
 }
 
 // 1. 会话列表接口类型

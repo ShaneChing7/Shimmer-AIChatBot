@@ -74,7 +74,7 @@
             <div class="relative">
               <!-- 选择框 -->
               <div 
-                class="cursor-pointer rounded-2xl w-27 px-2 py-2 h-3/5 bg-gray-50 dark:bg-gray-700 
+                class="cursor-pointer rounded-2xl  px-2 py-2 h-3/5 bg-gray-50 dark:bg-gray-700 
                 dark:border-gray-600 border-gray-300 hover:bg-muted flex items-center justify-between
                 transition-all duration-200 text-sm" 
                 :class="{ 'text-gray-400': isDropdownOpen }"
@@ -82,7 +82,7 @@
                 @mousedown.stop
               >
                 <span class="ml-1">{{ selectedModelLabel }}</span>
-                <ChevronDown class="size-4 transition-transform" :class="{ 'rotate-180': isDropdownOpen }" />
+                <ChevronDown class="size-4 transition-transform ml-1" :class="{ 'rotate-180': isDropdownOpen }" />
               </div>
 
               <!-- 下拉菜单 -->
@@ -90,13 +90,13 @@
                 <div 
                   v-if="isDropdownOpen" 
                   ref="dropdownRef" 
-                  class="absolute bottom-full mb-2 left-[-6px] z-10 w-30 rounded-lg shadow-lg 
+                  class="absolute bottom-full mb-2 left-[-6px] z-10 w-35  rounded-lg shadow-lg 
                   bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600"
                 >
                   <div 
                     v-for="model in modelOptions" 
                     :key="model.value"
-                    class="flex justify-between items-center px-3 py-2 cursor-pointer transition-colors duration-150 rounded-lg mx-1 my-1"
+                    class="flex justify-between whitespace-nowrap items-center px-3 py-2 cursor-pointer transition-colors duration-150 rounded-lg mx-1 my-1"
                     :class="{
                       'bg-muted dark:text-blue-100 font-semibold': selectedModel === model.value,
                       'hover:bg-gray-100 dark:hover:bg-gray-600': selectedModel !== model.value
@@ -153,6 +153,21 @@ const {loading} = storeToRefs(chatStore)
 // 消息输入和发送逻辑
 const input = ref('')
 
+
+// 语言选项数据
+const modelOptions = [
+  { value: 'deepseek-chat', label: 'Chat' },
+  { value: 'deepseek-reasoner', label: 'Reasoner' },
+];
+// 下拉框状态
+const selectedModel = ref('deepseek-chat');
+const isDropdownOpen = ref(false);
+const dropdownRef = ref<HTMLElement | null>(null);
+// 选择框中的文字
+const selectedModelLabel = computed(() =>
+  modelOptions.find(opt => opt.value === selectedModel.value)?.label
+);
+
 const sendMessage = async () => {
   if (loading.value) {
     toast.warning('会话数据正在加载中，请稍候再发送。');
@@ -179,27 +194,12 @@ const sendMessage = async () => {
   input.value = ''
 
   try {
-    await chatStore.sendMessage(messageContent);
+    await chatStore.sendMessage(messageContent,selectedModel.value);
   } catch (error) {
     toast.error(chatStore.error || '消息发送失败，请检查网络。');
   }
 }
 
-// 语言选项数据
-const modelOptions = [
-  { value: 'deepseek', label: 'DeepSeek' },
-  // { value: 'gemini', label: 'Gemini' },
-];
-
-// 下拉框状态
-const selectedModel = ref('deepseek');
-const isDropdownOpen = ref(false);
-const dropdownRef = ref<HTMLElement | null>(null);
-
-// 选择框中的文字
-const selectedModelLabel = computed(() =>
-  modelOptions.find(opt => opt.value === selectedModel.value)?.label
-);
 
 // 选择语言触发的函数
 const selectModel = (value: string) => {

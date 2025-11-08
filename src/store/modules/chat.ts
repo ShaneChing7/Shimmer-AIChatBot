@@ -115,130 +115,142 @@ export const useChatStore = defineStore("chat", {
       }
     },
 
-    async sendMessage(content: string) {
-      if (!this.currentSession?.id) {
-        this.error = "请先选择或创建一个会话。";
-        return;
-      }
+    async sendMessage(content: string, model: string = 'deepseek-chat') {
+  if (!this.currentSession?.id) {
+    this.error = "请先选择或创建一个会话。";
+    return;
+  }
 
-      const sessionId = this.currentSession.id;
+  const sessionId = this.currentSession.id;
 
-      // 1. 添加用户消息
-      const userMessage: ChatMessage = {
-        id: Date.now() * -1,
-        session: sessionId,
-        sender: "user",
-        content: content,
-        content_type: "text",
-        created_at: new Date().toISOString(),
-      };
-      this.currentSession.messages.push(userMessage);
+  // 1. 添加用户消息
+  const userMessage: ChatMessage = {
+    id: Date.now() * -1,
+    session: sessionId,
+    sender: "user",
+    content: content,
+    content_type: "text",
+    created_at: new Date().toISOString(),
+  };
+  this.currentSession.messages.push(userMessage);
 
-      // 2. 创建 AI 消息占位符 (不使用 reactive,直接创建普通对象)
-      const tempId = (Date.now() * -1) - 1;
-      const aiMessagePlaceholder: ChatMessage = {
-        id: tempId,
-        session: sessionId,
-        sender: "ai",
-        content: "", // 从空字符串开始
-        content_type: "markdown",
-        created_at: new Date().toISOString(),
-      };
-      this.currentSession.messages.push(aiMessagePlaceholder);
+  // 2. 创建 AI 消息占位符
+  const tempId = (Date.now() * -1) - 1;
+  const aiMessagePlaceholder: ChatMessage = {
+    id: tempId,
+    session: sessionId,
+    sender: "ai",
+    content: "",
+    content_type: "markdown",
+    created_at: new Date().toISOString(),
+    reasoning_content: "",  // 🎯 使用 reasoning_content 匹配后端字段
+  };
+  this.currentSession.messages.push(aiMessagePlaceholder);
 
-      // 3. 调用流式 API
-      this.loading = true;
-      this.error = null;
+  // 3. 调用流式 API
+  this.loading = true;
+  this.error = null;
 
-      try {
-        const apiUrl = `/api/api/sessions/${sessionId}/messages-stream/`;
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
+  try {
+    const apiUrl = `/api/api/sessions/${sessionId}/messages-stream/`;
+    const headers: HeadersInit = {
+      "Content-Type": "application/json",
+    };
 
-        const token = localStorage.getItem('TOKEN');
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
-        }
+    const token = localStorage.getItem('TOKEN');
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
 
-        const response = await fetch(apiUrl, {
-          method: "POST",
-          headers: headers,
-          body: JSON.stringify({ content }),
-        });
+    const response = await fetch(apiUrl, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify({ content, model }),
+    });
 
-        if (!response.ok || !response.body) {
-          const errorText = await response.text();
-          throw new Error(`网络错误: ${response.status} ${errorText}`);
-        }
+    if (!response.ok || !response.body) {
+      const errorText = await response.text();
+      throw new Error(`网络错误: ${response.status} ${errorText}`);
+    }
 
-        // 4. 处理流式响应
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder("utf-8");
-        let buffer = "";
+    // 4. 处理流式响应
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+    let buffer = "";
 
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
 
-          buffer += decoder.decode(value, { stream: true });
+      buffer += decoder.decode(value, { stream: true });
 
-          // 按行处理 SSE 消息
-          let newlineIndex;
-          while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-            const line = buffer.slice(0, newlineIndex).trim();
-            buffer = buffer.slice(newlineIndex + 1);
+      // 按行处理 SSE 消息
+      let newlineIndex;
+      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+        const line = buffer.slice(0, newlineIndex).trim();
+        buffer = buffer.slice(newlineIndex + 1);
 
-            if (line.startsWith('data: ')) {
-              const dataStr = line.substring(6);
-              
-              // 跳过心跳消息
-              if (dataStr === ':keepalive') continue;
+        if (line.startsWith('data: ')) {
+          const dataStr = line.substring(6);
+          
+          if (dataStr === ':keepalive') continue;
 
-              try {
-                const data = JSON.parse(dataStr);
+          try {
+            const data = JSON.parse(dataStr);
 
-                if (data.event === 'done' && data.message) {
-                  // 流结束,用完整消息替换占位符
-                  const finalMessage: ChatMessage = data.message;
-                  const index = this.currentSession!.messages.findIndex(
-                    m => m.id === tempId
-                  );
-                  if (index !== -1) {
-                    // 直接替换整个对象以确保响应式更新
-                    this.currentSession!.messages.splice(index, 1, finalMessage);
-                  }
-                } else if (data.event === 'error') {
-                  throw new Error(`AI 错误: ${data.detail}`);
-                } else if (data.content !== undefined) {
-                  // 收到内容块,追加到占位符
-                  const index = this.currentSession!.messages.findIndex(
-                    m => m.id === tempId
-                  );
-                  if (index !== -1 && this.currentSession?.messages[index]) {
-                    // 关键修复:直接修改 state 中的对象属性
-                    this.currentSession.messages[index].content += data.content;
-                  }
+            if (data.event === 'done' && data.message) {
+              // 流结束,用完整消息替换占位符
+              const finalMessage: ChatMessage = {
+                ...data.message,
+                reasoning_content: data.reasoning || ""  // 🎯 保存完整推理过程，使用 reasoning_content
+              };
+              const index = this.currentSession!.messages.findIndex(
+                m => m.id === tempId
+              );
+              if (index !== -1) {
+                this.currentSession!.messages.splice(index, 1, finalMessage);
+              }
+            } else if (data.event === 'error') {
+              throw new Error(`AI 错误: ${data.detail}`);
+            } else if (data.type === 'reasoning') {
+              // 🎯 收到推理内容块
+              const index = this.currentSession!.messages.findIndex(
+                m => m.id === tempId
+              );
+              if (index !== -1 && this.currentSession?.messages[index]) {
+                if (!this.currentSession.messages[index].reasoning_content) {
+                  this.currentSession.messages[index].reasoning_content = "";
                 }
-              } catch (e) {
-                console.warn("无法解析的 SSE data:", dataStr, e);
+                this.currentSession.messages[index].reasoning_content += data.content;
+              }
+            } else if (data.type === 'content') {
+              // 🎯 收到正常内容块
+              const index = this.currentSession!.messages.findIndex(
+                m => m.id === tempId
+              );
+              if (index !== -1 && this.currentSession?.messages[index]) {
+                this.currentSession.messages[index].content += data.content;
               }
             }
+          } catch (e) {
+            console.warn("无法解析的 SSE data:", dataStr, e);
           }
         }
-
-      } catch (err: any) {
-        this.error = err.message || "网络请求错误";
-        const index = this.currentSession!.messages.findIndex(
-          m => m.id === tempId
-        );
-        if (index !== -1 && this.currentSession?.messages[index]) {
-          this.currentSession!.messages[index].content = `**请求失败:** ${this.error}`;
-        }
-      } finally {
-        this.loading = false;
       }
-    },
+    }
+
+  } catch (err: any) {
+    this.error = err.message || "网络请求错误";
+    const index = this.currentSession!.messages.findIndex(
+      m => m.id === tempId
+    );
+    if (index !== -1 && this.currentSession?.messages[index]) {
+      this.currentSession!.messages[index].content = `**请求失败:** ${this.error}`;
+    }
+  } finally {
+    this.loading = false;
+  }
+},
 
     clearChatState() {
       this.sessions = null;
