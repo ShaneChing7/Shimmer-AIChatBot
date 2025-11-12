@@ -143,7 +143,7 @@ export const useChatStore = defineStore("chat", {
     content: "",
     content_type: "markdown",
     created_at: new Date().toISOString(),
-    reasoning_content: "",  // 🎯 使用 reasoning_content 匹配后端字段
+    reasoning_content: "",  //   使用 reasoning_content 匹配后端字段
   };
   this.currentSession.messages.push(aiMessagePlaceholder);
 
@@ -202,7 +202,7 @@ export const useChatStore = defineStore("chat", {
               // 流结束,用完整消息替换占位符
               const finalMessage: ChatMessage = {
                 ...data.message,
-                reasoning_content: data.reasoning || ""  // 🎯 保存完整推理过程，使用 reasoning_content
+                reasoning_content: data.reasoning || ""  //   保存完整推理过程，使用 reasoning_content
               };
               const index = this.currentSession!.messages.findIndex(
                 m => m.id === tempId
@@ -213,7 +213,7 @@ export const useChatStore = defineStore("chat", {
             } else if (data.event === 'error') {
               throw new Error(`AI 错误: ${data.detail}`);
             } else if (data.type === 'reasoning') {
-              // 🎯 收到推理内容块
+              //   收到推理内容块
               const index = this.currentSession!.messages.findIndex(
                 m => m.id === tempId
               );
@@ -224,7 +224,7 @@ export const useChatStore = defineStore("chat", {
                 this.currentSession.messages[index].reasoning_content += data.content;
               }
             } else if (data.type === 'content') {
-              // 🎯 收到正常内容块
+              //   收到正常内容块
               const index = this.currentSession!.messages.findIndex(
                 m => m.id === tempId
               );

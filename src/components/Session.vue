@@ -75,7 +75,7 @@ const emit = defineEmits<{
 
 
 /**
- * 🎯 处理点击整个会话 item
+ *   处理点击整个会话 item
  */
 const selectSession = () => {
     // 触发父组件的 select-session 事件，并传递当前会话 ID
@@ -84,7 +84,7 @@ const selectSession = () => {
 
 
 /**
- * 🎯 处理点击删除按钮 (需要阻止事件冒泡，防止触发 selectSession)
+ *   处理点击删除按钮 (需要阻止事件冒泡，防止触发 selectSession)
  */
 const handleDelete = () => {
     emit('delete', props.session.id);

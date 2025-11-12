@@ -1,5 +1,5 @@
 <template>
-  <router-view />
+  <router-view class=" overflow-y-hidden" />
   
   <Toaster rich-colors position="top-right" />
 </template>

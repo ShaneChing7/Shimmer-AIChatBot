@@ -5,7 +5,7 @@
       <Sparkle class="shrink-0 size-7 mt-0.5"></Sparkle>
       <div class="flex flex-col w-full">
         <div class="bg-white-200 text-gray-900 dark:text-white dark:bg-muted rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
-          <!-- 🎯 只有在完全没有内容时才显示"正在输入" -->
+          <!--   只有在完全没有内容时才显示"正在输入" -->
           <div v-if="isCompletelyEmpty" class="flex items-center gap-2 py-1">
             <div class="flex gap-1">
               <div class="typing-cursor">
@@ -15,9 +15,9 @@
             </div>
           </div>
           
-          <!-- 🎯 有任何内容就显示 -->
+          <!--   有任何内容就显示 -->
           <div v-else class="w-full">
-            <!-- 🎯 推理过程区域 (如果存在) -->
+            <!--   推理过程区域 (如果存在) -->
             <div v-if="hasReasoningContent" class="reasoning-section mb-3">
               <div 
                 class="reasoning-header flex items-center gap-2 p-2 bg-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg cursor-pointer  dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-200"
@@ -33,7 +33,7 @@
                     思考过程
                   </span>
                   
-                  <!-- 🎯 实时推理状态指示器 -->
+                  <!--   实时推理状态指示器 -->
                   <div v-if="isReasoningStreaming" class="flex items-center gap-1">
                     <div class="flex gap-0.5">
                       <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
@@ -55,7 +55,7 @@
                 />
               </div>
               
-              <!-- 🎯 推理内容 - 支持流式展示 -->
+              <!--   推理内容 - 支持流式展示 -->
               <div 
                 v-show="isReasoningExpanded"
                 class="reasoning-content mt-2 p-3 bg-white dark:from-gray-800 dark:to-gray-750 rounded-lg  relative overflow-hidden"
@@ -63,13 +63,13 @@
                 <!-- 流式输出的推理内容 -->
                 <div class="text-xs text-gray-500 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                   {{ message.reasoning_content }}
-                  <!-- 🎯 推理中显示光标 -->
+                  <!--   推理中显示光标 -->
                   <span v-if="isReasoningStreaming" class="inline-block w-1.5 h-3.5 bg-blue-500 ml-0.5 animate-pulse"></span>
                 </div>
               </div>
             </div>
             
-            <!-- 🎯 正常回复内容区域 -->
+            <!--   正常回复内容区域 -->
             <div class="answer-content">
               <!-- 如果正在输出答案，显示渐入动画 -->
               <div 
@@ -78,11 +78,11 @@
                 :class="{ 'streaming-content': isAnswerStreaming }"
               >
                 <Response>{{ message.content }}</Response>
-                <!-- 🎯 回答中显示光标 -->
+                <!--   回答中显示光标 -->
                 <span v-if="isAnswerStreaming" class="inline-block w-1.5 h-3.5 bg-gray-600 dark:bg-gray-300 ml-0.5 animate-pulse"></span>
               </div>
               
-              <!-- 🎯 如果只有推理内容但还没有答案内容 -->
+              <!--   如果只有推理内容但还没有答案内容 -->
               <div v-else-if="hasReasoningContent && !hasAnswerContent" class="m-1 py-2">
                 <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                   <div class="flex gap-1">
@@ -134,11 +134,17 @@
               <Tooltip>
                 <TooltipTrigger as-child>
                   <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
-                    <Copy :size="16"></Copy>
+                    <Transition name="icon-fade" mode="out-in">
+                        <component 
+                            :is="copySuccess ? Check : Copy" 
+                            :size="16"
+                            :key="copySuccess ? 'check-icon' : 'copy-icon'" 
+                        ></component>
+                    </Transition>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>复制</p>
+                  <p>{{ copySuccess ? '已复制' : '复制' }}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -167,11 +173,11 @@
 
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { defineProps, computed, ref } from 'vue'
+import { defineProps, computed, ref,onBeforeUnmount  } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
 import type { ChatMessage } from '@/api/chat/type'
-import { Bot, Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle} from 'lucide-vue-next'
+import { Bot, Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle,Check } from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,
@@ -186,43 +192,47 @@ const props = defineProps<{
   message: ChatMessage & { text?: string }
 }>()
 
-// 🎯 推理过程展开状态 - 默认折叠
+// 定时器引用
+const copyTimer = ref<number | null>(null)
+const copySuccess = ref<boolean>(false)
+
+//   推理过程展开状态 - 默认折叠
 const isReasoningExpanded = ref(false)
 
-// 🎯 判断是否完全没有内容（既没有推理也没有回答）
+//   判断是否完全没有内容（既没有推理也没有回答）
 const isCompletelyEmpty = computed(() => {
   const hasReasoning = props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
   const hasContent = props.message.content && props.message.content.trim() !== ''
   return props.message.sender === 'ai' && !hasReasoning && !hasContent
 })
 
-// 🎯 是否有推理内容
+//   是否有推理内容
 const hasReasoningContent = computed(() => {
   return props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
 })
 
-// 🎯 是否有回答内容
+//   是否有回答内容
 const hasAnswerContent = computed(() => {
   return props.message.content && props.message.content.trim() !== ''
 })
 
-// 🎯 推理过程是否正在流式输出
+//   推理过程是否正在流式输出
 // 判断依据：有推理内容，但最终消息还没收到（id 为临时负数）
 const isReasoningStreaming = computed(() => {
   return props.message.id < 0 && hasReasoningContent.value && !hasAnswerContent.value
 })
 
-// 🎯 回答是否正在流式输出
+//   回答是否正在流式输出
 const isAnswerStreaming = computed(() => {
   return hasAnswerContent.value && props.message.id < 0
 })
 
-// 🎯 推理内容字符数
+//   推理内容字符数
 const reasoningCharCount = computed(() => {
   return props.message.reasoning_content?.length || 0
 })
 
-// 🎯 切换推理过程展开/折叠
+//   切换推理过程展开/折叠
 const toggleReasoning = () => {
   isReasoningExpanded.value = !isReasoningExpanded.value
 }
@@ -285,7 +295,19 @@ const handleCopy = async () => {
 
   try {
     await navigator.clipboard.writeText(contentToCopy);
-    console.log('内容已复制');
+    // 清除之前的计时器，避免多次点击造成抖动
+    if (copyTimer.value) {
+      clearTimeout(copyTimer.value)
+      copyTimer.value = null
+    }
+    // 立刻显示 Check 图标
+    copySuccess.value = true
+    // 1.5 秒后恢复成 Copy 图标
+    copyTimer.value = window.setTimeout(() => {
+      copySuccess.value = false
+      copyTimer.value = null
+    }, 1500)
+    
   } catch (err) {
     console.error('复制到剪贴板失败:', err);
   }
@@ -293,6 +315,18 @@ const handleCopy = async () => {
 </script>
 
 <style scoped>
+
+/* copy图标与check图标切换动画 */
+.icon-fade-enter-from,
+.icon-fade-leave-to {
+    opacity: 0; 
+}
+
+.icon-fade-enter-active,
+.icon-fade-leave-active {
+    transition: opacity 0.1s ease-in-out, transform 0.1s ease-in-out;
+}
+
 /* 打字机光标动画 */
 .typing-cursor {
   display: flex;
@@ -324,7 +358,7 @@ const handleCopy = async () => {
   overflow-wrap: break-word;
 }
 
-/* 🎯 推理区域淡入动画 */
+/* 推理区域淡入动画 */
 .reasoning-section {
   animation: fadeInSlide 0.3s ease-out;
 }
@@ -340,7 +374,7 @@ const handleCopy = async () => {
   }
 }
 
-/* 🎯 推理内容展开/收起动画 */
+/* 推理内容展开/收起动画 */
 .reasoning-content {
   max-height: 400px;
   overflow-y: auto;
@@ -362,7 +396,7 @@ const handleCopy = async () => {
   }
 }
 
-/* 🎯 流式内容淡入 */
+/* 流式内容淡入 */
 .streaming-content {
   animation: contentFadeIn 0.2s ease-in;
 }
@@ -392,7 +426,7 @@ const handleCopy = async () => {
   background: #dcdcdc
 }
 
-/* 🎯 光标闪烁动画 */
+/* 光标闪烁动画 */
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -402,7 +436,7 @@ const handleCopy = async () => {
   }
 }
 
-/* 🎯 弹跳动画 */
+/* 弹跳动画 */
 @keyframes bounce {
   0%, 100% {
     transform: translateY(0);

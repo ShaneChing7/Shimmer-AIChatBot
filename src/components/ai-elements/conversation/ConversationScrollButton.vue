@@ -18,7 +18,7 @@ function handleClick() {
 </script>
 
 <template>
-  <div class="pointer-events-none absolute inset-0 z-20 flex items-end justify-center pb-4">
+  <div class="pointer-events-none absolute inset-0 z-20 flex items-end justify-center mb-5">
     <Button
       v-show="showScrollButton"
       class=" border-0  cursor-pointer pointer-events-auto rounded-full shadow-sm"

@@ -255,7 +255,7 @@ watch([isExpanded, scrollContainer], async ([expanded, container]) => {
     // 初始化容器高度
     containerHeight.value = container.clientHeight;
     
-    // 🎯 关键: 恢复滚动位置
+    //   关键: 恢复滚动位置
     await nextTick(); // 再等一次,确保 DOM 完全渲染
     restoreScrollPosition();
     

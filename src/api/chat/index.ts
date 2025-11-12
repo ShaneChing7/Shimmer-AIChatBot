@@ -71,7 +71,7 @@ export const reqChatMessageCreate = (sessionId: number, data: ChatMessageCreateD
   )
 
 /**
- * 🎯 删除聊天会话 (DELETE /api/sessions/{pk}/)
+ *   删除聊天会话 (DELETE /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  */
 export const reqDeleteSession = (sessionId: number) =>
@@ -80,7 +80,7 @@ export const reqDeleteSession = (sessionId: number) =>
   )
 
 /**
- * 🎯 修改会话标题 (PATCH /api/sessions/{pk}/)
+ *   修改会话标题 (PATCH /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  * @param data - 包含新标题
  * @returns 更新后的会话基础信息 (ChatSession)
