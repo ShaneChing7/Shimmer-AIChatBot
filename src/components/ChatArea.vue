@@ -36,7 +36,7 @@
       <div 
         class="  absolute left-0 right-0 flex justify-center px-4 transition-all duration-500 ease-in-out"
         :style="{
-          bottom: (currentMessages.length > 0 || isExpanded) ? '27px' : '31%'
+          bottom: (currentMessages.length > 0 || isExpanded) ? '27px' : '40%'
         }">
         <Transition
           enter-active-class="transition-opacity duration-300"
@@ -47,7 +47,7 @@
           leave-to-class="opacity-0"
         >
           <h2 v-show="!currentMessages.length" class="absolute top-[-50px] text-3xl font-semibold">
-            你好！ {{ userStore.username }}
+            {{getTime()+'好！ '+userStore.username }}
           </h2>
         </Transition>
         <div
@@ -158,7 +158,8 @@ import { toast } from 'vue-sonner';
 import { useChatStore } from '@/store/modules/chat';
 import useUserStore from '@/store/modules/user';
 import { storeToRefs } from 'pinia';
-
+import { getTime } from '@/utils/time';
+import { GET_MODEL, SET_MODEL } from '@/utils/model';
 
 const chatStore = useChatStore();
 const userStore = useUserStore();
@@ -189,7 +190,14 @@ const modelOptions = [
   { value: 'deepseek-reasoner', label: 'Reasoner' },
 ];
 // 下拉框状态
-const selectedModel = ref('deepseek-chat');
+const initialModel = GET_MODEL();
+const defaultModel = 'deepseek-chat';
+
+if (!initialModel) {
+  SET_MODEL(defaultModel); // 如果没有存储的模型，将默认模型写入存储
+}
+const selectedModel = ref(initialModel || defaultModel);
+
 const isDropdownOpen = ref(false);
 const dropdownRef = ref<HTMLElement | null>(null);
 // 选择框中的文字
@@ -260,7 +268,7 @@ const sendMessage = async () => {
 const selectModel = (value: string) => {
   selectedModel.value = value;
   isDropdownOpen.value = false;
-  console.log('选择的语言:', value);
+  SET_MODEL(value)
 };
 
 // 处理外部点击关闭下拉菜单

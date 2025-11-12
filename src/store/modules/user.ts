@@ -7,6 +7,7 @@ import { reqLogin, reqUserInfo,reqRegister } from '@/api/user'
 // 从utils中引入把从登录成功后得到的token存入localStorage的工具
 import { SET_TOKEN, GET_TOKEN, REMOVE_TOKEN } from '@/utils/token'
 
+import { REMOVE_MODEL } from "@/utils/model";
 interface UserState {
 	token: string | null
 	username: string
@@ -64,6 +65,7 @@ const useUserStore = defineStore('User', {
         this.username = ''
         this.avatar = 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'
         REMOVE_TOKEN()
+        REMOVE_MODEL()
     }
   },
 

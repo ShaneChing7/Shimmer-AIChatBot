@@ -21,6 +21,7 @@ interface ChatState {
   selectedSessionId: number | null;
   loading: boolean;
   error: string | null;
+  regeneratingMessageId: number | null;
 }
 
 export const useChatStore = defineStore("chat", {
@@ -30,6 +31,7 @@ export const useChatStore = defineStore("chat", {
     selectedSessionId: null,
     loading: false,
     error: null,
+    regeneratingMessageId: null,
   }),
 
   getters: {
@@ -116,141 +118,277 @@ export const useChatStore = defineStore("chat", {
     },
 
     async sendMessage(content: string, model: string = 'deepseek-chat') {
-  if (!this.currentSession?.id) {
-    this.error = "请先选择或创建一个会话。";
-    return;
-  }
+      if (!this.currentSession?.id) {
+        this.error = "请先选择或创建一个会话。";
+        return;
+      }
 
-  const sessionId = this.currentSession.id;
+      const sessionId = this.currentSession.id;
 
-  // 1. 添加用户消息
-  const userMessage: ChatMessage = {
-    id: Date.now() * -1,
-    session: sessionId,
-    sender: "user",
-    content: content,
-    content_type: "text",
-    created_at: new Date().toISOString(),
-  };
-  this.currentSession.messages.push(userMessage);
+      // 1. 添加用户消息
+      const userMessage: ChatMessage = {
+        id: Date.now() * -1,
+        session: sessionId,
+        sender: "user",
+        content: content,
+        content_type: "text",
+        created_at: new Date().toISOString(),
+      };
+      this.currentSession.messages.push(userMessage);
 
-  // 2. 创建 AI 消息占位符
-  const tempId = (Date.now() * -1) - 1;
-  const aiMessagePlaceholder: ChatMessage = {
-    id: tempId,
-    session: sessionId,
-    sender: "ai",
-    content: "",
-    content_type: "markdown",
-    created_at: new Date().toISOString(),
-    reasoning_content: "",  //   使用 reasoning_content 匹配后端字段
-  };
-  this.currentSession.messages.push(aiMessagePlaceholder);
+      // 2. 创建 AI 消息占位符
+      const tempId = (Date.now() * -1) - 1;
+      const aiMessagePlaceholder: ChatMessage = {
+        id: tempId,
+        session: sessionId,
+        sender: "ai",
+        content: "",
+        content_type: "markdown",
+        created_at: new Date().toISOString(),
+        reasoning_content: "",  //   使用 reasoning_content 匹配后端字段
+      };
+      this.currentSession.messages.push(aiMessagePlaceholder);
 
-  // 3. 调用流式 API
-  this.loading = true;
-  this.error = null;
+      // 3. 调用流式 API
+      this.loading = true;
+      this.error = null;
 
-  try {
-    const apiUrl = `/api/api/sessions/${sessionId}/messages-stream/`;
-    const headers: HeadersInit = {
-      "Content-Type": "application/json",
-    };
+      try {
+        const apiUrl = `/api/api/sessions/${sessionId}/messages-stream/`;
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
 
-    const token = localStorage.getItem('TOKEN');
-    if (token) {
-      headers["Authorization"] = `Bearer ${token}`;
-    }
+        const token = localStorage.getItem('TOKEN');
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
 
-    const response = await fetch(apiUrl, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify({ content, model }),
-    });
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: headers,
+          body: JSON.stringify({ content, model }),
+        });
 
-    if (!response.ok || !response.body) {
-      const errorText = await response.text();
-      throw new Error(`网络错误: ${response.status} ${errorText}`);
-    }
+        if (!response.ok || !response.body) {
+          const errorText = await response.text();
+          throw new Error(`网络错误: ${response.status} ${errorText}`);
+        }
 
-    // 4. 处理流式响应
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder("utf-8");
-    let buffer = "";
+        // 4. 处理流式响应
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
 
-      buffer += decoder.decode(value, { stream: true });
+          buffer += decoder.decode(value, { stream: true });
 
-      // 按行处理 SSE 消息
-      let newlineIndex;
-      while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-        const line = buffer.slice(0, newlineIndex).trim();
-        buffer = buffer.slice(newlineIndex + 1);
+          // 按行处理 SSE 消息
+          let newlineIndex;
+          while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+            const line = buffer.slice(0, newlineIndex).trim();
+            buffer = buffer.slice(newlineIndex + 1);
 
-        if (line.startsWith('data: ')) {
-          const dataStr = line.substring(6);
-          
-          if (dataStr === ':keepalive') continue;
+            if (line.startsWith('data: ')) {
+              const dataStr = line.substring(6);
+              
+              if (dataStr === ':keepalive') continue;
 
-          try {
-            const data = JSON.parse(dataStr);
+              try {
+                const data = JSON.parse(dataStr);
 
-            if (data.event === 'done' && data.message) {
-              // 流结束,用完整消息替换占位符
-              const finalMessage: ChatMessage = {
-                ...data.message,
-                reasoning_content: data.reasoning || ""  //   保存完整推理过程，使用 reasoning_content
-              };
-              const index = this.currentSession!.messages.findIndex(
-                m => m.id === tempId
-              );
-              if (index !== -1) {
-                this.currentSession!.messages.splice(index, 1, finalMessage);
-              }
-            } else if (data.event === 'error') {
-              throw new Error(`AI 错误: ${data.detail}`);
-            } else if (data.type === 'reasoning') {
-              //   收到推理内容块
-              const index = this.currentSession!.messages.findIndex(
-                m => m.id === tempId
-              );
-              if (index !== -1 && this.currentSession?.messages[index]) {
-                if (!this.currentSession.messages[index].reasoning_content) {
-                  this.currentSession.messages[index].reasoning_content = "";
+                if (data.event === 'done' && data.message) {
+                  // 流结束,用完整消息替换占位符
+                  const finalMessage: ChatMessage = {
+                    ...data.message,
+                    reasoning_content: data.reasoning || ""  //   保存完整推理过程，使用 reasoning_content
+                  };
+                  const index = this.currentSession!.messages.findIndex(
+                    m => m.id === tempId
+                  );
+                  if (index !== -1) {
+                    this.currentSession!.messages.splice(index, 1, finalMessage);
+                  }
+                } else if (data.event === 'error') {
+                  throw new Error(`AI 错误: ${data.detail}`);
+                } else if (data.type === 'reasoning') {
+                  //   收到推理内容块
+                  const index = this.currentSession!.messages.findIndex(
+                    m => m.id === tempId
+                  );
+                  if (index !== -1 && this.currentSession?.messages[index]) {
+                    if (!this.currentSession.messages[index].reasoning_content) {
+                      this.currentSession.messages[index].reasoning_content = "";
+                    }
+                    this.currentSession.messages[index].reasoning_content += data.content;
+                  }
+                } else if (data.type === 'content') {
+                  //   收到正常内容块
+                  const index = this.currentSession!.messages.findIndex(
+                    m => m.id === tempId
+                  );
+                  if (index !== -1 && this.currentSession?.messages[index]) {
+                    this.currentSession.messages[index].content += data.content;
+                  }
                 }
-                this.currentSession.messages[index].reasoning_content += data.content;
-              }
-            } else if (data.type === 'content') {
-              //   收到正常内容块
-              const index = this.currentSession!.messages.findIndex(
-                m => m.id === tempId
-              );
-              if (index !== -1 && this.currentSession?.messages[index]) {
-                this.currentSession.messages[index].content += data.content;
+              } catch (e) {
+                console.warn("无法解析的 SSE data:", dataStr, e);
               }
             }
-          } catch (e) {
-            console.warn("无法解析的 SSE data:", dataStr, e);
           }
         }
-      }
-    }
 
-  } catch (err: any) {
-    this.error = err.message || "网络请求错误";
-    const index = this.currentSession!.messages.findIndex(
-      m => m.id === tempId
-    );
-    if (index !== -1 && this.currentSession?.messages[index]) {
-      this.currentSession!.messages[index].content = `**请求失败:** ${this.error}`;
-    }
-  } finally {
-    this.loading = false;
-  }
-},
+      } catch (err: any) {
+        this.error = err.message || "网络请求错误";
+        const index = this.currentSession!.messages.findIndex(
+          m => m.id === tempId
+        );
+        if (index !== -1 && this.currentSession?.messages[index]) {
+          this.currentSession!.messages[index].content = `**请求失败:** ${this.error}`;
+        }
+      } finally {
+        this.loading = false;
+      }
+    },
+    
+    async regenerateMessage(messageId: number, model: string = 'deepseek-chat') {
+      if (!this.currentSession?.id) {
+        this.error = "没有活动的会话。";
+        return;
+      }
+
+      const sessionId = this.currentSession.id;
+
+      // 1. 找到要重新生成的消息
+      const messageIndex = this.currentSession.messages.findIndex(
+        (m) => m.id === messageId
+      );
+
+      if (messageIndex === -1) {
+        this.error = "未找到要重新生成的消息。";
+        return;
+      }
+
+      const messageToRegenerate = this.currentSession.messages[messageIndex];
+
+      if (!messageToRegenerate || messageToRegenerate.sender !== 'ai') {
+        this.error = "只能重新生成 AI 的消息。";
+        return;
+      }
+
+      // 2. ⚡️ 关键: 清空现有消息的内容，准备接收新流
+      messageToRegenerate.content = "";
+      messageToRegenerate.reasoning_content = "";
+
+      // 3. 调用流式 API
+      this.loading = true;
+      this.regeneratingMessageId = messageId;
+      this.error = null;
+
+      try {
+        // 🎯 更改 API URL
+        const apiUrl = `/api/api/sessions/${sessionId}/regenerate/`;
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+
+        const token = localStorage.getItem('TOKEN');
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(apiUrl, {
+          method: "POST",
+          headers: headers,
+          // 🎯 更改 Body
+          body: JSON.stringify({ message_id: messageId, model }),
+        });
+
+        if (!response.ok || !response.body) {
+          const errorText = await response.text();
+          throw new Error(`网络错误: ${response.status} ${errorText}`);
+        }
+
+        // 4. 处理流式响应 (与 sendMessage 逻辑相同)
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let buffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+
+          let newlineIndex;
+          while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+            const line = buffer.slice(0, newlineIndex).trim();
+            buffer = buffer.slice(newlineIndex + 1);
+
+            if (line.startsWith('data: ')) {
+              const dataStr = line.substring(6);
+              if (dataStr === ':keepalive') continue;
+
+              try {
+                const data = JSON.parse(dataStr);
+
+                // 🎯 关键: 查找消息使用 messageId 而不是 tempId
+                const index = this.currentSession!.messages.findIndex(
+                  m => m.id === messageId
+                );
+
+                if (index === -1) continue; // 如果消息被删除了，就停止
+
+                const targetMessage = this.currentSession!.messages[index];
+                if (!targetMessage) continue; // 额外的类型保护，避免 targetMessage 为 undefined
+
+                if (data.event === 'done' && data.message) {
+                  // 流结束,用完整消息替换
+                  const finalMessage: ChatMessage = {
+                    ...data.message,
+                    reasoning_content: data.reasoning || ""
+                  };
+                  this.currentSession!.messages.splice(index, 1, finalMessage);
+
+                } else if (data.event === 'error') {
+                  throw new Error(`AI 错误: ${data.detail}`);
+
+                } else if (data.type === 'reasoning') {
+                  // 收到推理内容块
+                  if (!targetMessage.reasoning_content) {
+                    targetMessage.reasoning_content = "";
+                  }
+                  targetMessage.reasoning_content += data.content;
+
+                } else if (data.type === 'content') {
+                  // 收到正常内容块
+                  targetMessage.content += data.content;
+                }
+              } catch (e) {
+                console.warn("无法解析的 SSE data:", dataStr, e);
+              }
+            }
+          }
+        }
+
+      } catch (err: any) {
+        this.error = err.message || "网络请求错误";
+        // 🎯 更新失败状态到 *原始* 消息
+        const index = this.currentSession!.messages.findIndex(
+          m => m.id === messageId
+        );
+        if (index !== -1 && this.currentSession?.messages[index]) {
+          this.currentSession!.messages[index].content = `**重新生成失败:** ${this.error}`;
+        }
+      } finally {
+        this.loading = false;
+        this.regeneratingMessageId = null;
+      }
+    },
+
 
     clearChatState() {
       this.sessions = null;

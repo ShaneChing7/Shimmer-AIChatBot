@@ -173,10 +173,10 @@
 
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { defineProps, computed, ref,onBeforeUnmount  } from 'vue'
+import { defineProps, computed, ref,  } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
-import type { ChatMessage } from '@/api/chat/type'
+import type { ChatMessage, MessageSender } from '@/api/chat/type'
 import { Bot, Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle,Check } from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
@@ -185,13 +185,21 @@ import {
   TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
+import { useChatStore } from "@/store/modules/chat"
+import { GET_MODEL } from "@/utils/model"
+import { storeToRefs } from "pinia"
 
 const userStore = useUserStore()
-
+const chatStore = useChatStore()
 const props = defineProps<{
   message: ChatMessage & { text?: string }
 }>()
-
+// 从 store 中响应式地获取 regeneratingMessageId
+const { regeneratingMessageId } = storeToRefs(chatStore)
+// 创建一个计算属性，判断 *当前* 消息是否正在被重试
+const isCurrentlyRegenerating = computed(() => {
+  return regeneratingMessageId.value === props.message.id
+})
 // 定时器引用
 const copyTimer = ref<number | null>(null)
 const copySuccess = ref<boolean>(false)
@@ -203,6 +211,10 @@ const isReasoningExpanded = ref(false)
 const isCompletelyEmpty = computed(() => {
   const hasReasoning = props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
   const hasContent = props.message.content && props.message.content.trim() !== ''
+  // 如果正在重试，也不算 "完全为空"（它会显示 "正在输入..."）
+  if (isCurrentlyRegenerating.value) {
+    return !hasReasoning && !hasContent
+  }
   return props.message.sender === 'ai' && !hasReasoning && !hasContent
 })
 
@@ -219,12 +231,17 @@ const hasAnswerContent = computed(() => {
 //   推理过程是否正在流式输出
 // 判断依据：有推理内容，但最终消息还没收到（id 为临时负数）
 const isReasoningStreaming = computed(() => {
-  return props.message.id < 0 && hasReasoningContent.value && !hasAnswerContent.value
+  // 满足任一条件即可：(是新消息) 或 (正在被重试)
+  const isStreaming = (props.message.id < 0) || isCurrentlyRegenerating.value
+  
+  return isStreaming && hasReasoningContent.value && !hasAnswerContent.value
 })
 
 //   回答是否正在流式输出
 const isAnswerStreaming = computed(() => {
-  return hasAnswerContent.value && props.message.id < 0
+  const isStreaming = (props.message.id < 0) || isCurrentlyRegenerating.value
+  
+  return isStreaming && hasAnswerContent.value
 })
 
 //   推理内容字符数
@@ -278,7 +295,11 @@ const handleShare = () => {
 }
 
 const handleRetry = () => {
-  console.log(`正在重试消息 ID: ${props.message.id}`);
+  // 假设你也能拿到当前选择的 model
+  const currentModel = GET_MODEL() || 'deepseek-chat'; 
+  
+  // 核心调用
+  chatStore.regenerateMessage(props.message.id, currentModel);
 }
 
 const handleCopy = async () => {
