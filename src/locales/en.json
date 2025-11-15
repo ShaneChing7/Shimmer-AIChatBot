@@ -67,6 +67,7 @@
     "close": "Close"
   },
   "session": {
+    "noSession": "No chats yet",
     "newSession": "Start New Chat",
     "newSessionTitle": "New Session",
     "editSessionTitle": "Edit Session Title",

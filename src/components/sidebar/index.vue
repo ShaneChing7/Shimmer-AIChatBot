@@ -55,8 +55,8 @@
 
       <!-- 空状态提示 -->
       <div v-else-if="isExpanded && sessions.length === 0" 
-        class="h-full flex items-center justify-center text-sm text-muted-foreground">
-        暂无会话
+        class="h-full flex items-center justify-center text-sm text-muted-foreground whitespace-nowrap">
+        {{t("session.noSession")}}
       </div>
 
       <!-- 底部遮罩 -->

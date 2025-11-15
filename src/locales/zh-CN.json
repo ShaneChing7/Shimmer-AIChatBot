@@ -67,6 +67,7 @@
     "close": "关闭"
   },
   "session": {
+    "noSession": "暂无会话",
     "newSession": "开启新对话",
     "newSessionTitle": "新会话",
     "editSessionTitle":"修改会话标题",
