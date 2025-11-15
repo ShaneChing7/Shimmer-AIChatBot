@@ -154,7 +154,7 @@ export const useChatStore = defineStore("chat", {
       this.error = null;
 
       try {
-        const apiUrl = `/api/api/sessions/${sessionId}/messages-stream/`;
+        const apiUrl = `/api/sessions/${sessionId}/messages-stream/`;
         const headers: HeadersInit = {
           "Content-Type": "application/json",
         };
@@ -290,7 +290,7 @@ export const useChatStore = defineStore("chat", {
 
       try {
         // 🎯 更改 API URL
-        const apiUrl = `/api/api/sessions/${sessionId}/regenerate/`;
+        const apiUrl = `/api/sessions/${sessionId}/regenerate/`;
         const headers: HeadersInit = {
           "Content-Type": "application/json",
         };

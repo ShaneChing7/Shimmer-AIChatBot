@@ -22,10 +22,6 @@ export default defineConfig(({ mode }) => {
 				[env.VITE_APP_BASE_API]: {
 					//服务器地址
 					target: env.VITE_SERVE,
-					//跨域
-					changeOrigin: true,
-					//路径重写
-					rewrite: (path) => path.replace(/^\/api/, ''),
 				},
 			},
 		},

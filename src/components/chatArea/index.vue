@@ -153,7 +153,7 @@
 <script setup lang="ts">
 import { Sparkles, Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft } from 'lucide-vue-next'
 import { ref, watch, computed, onUnmounted, nextTick } from 'vue'
-import MessageList from '@/components/MessageList.vue'
+import MessageList from './MessageList.vue'
 import { toast } from 'vue-sonner';
 import { useChatStore } from '@/store/modules/chat';
 import useUserStore from '@/store/modules/user';

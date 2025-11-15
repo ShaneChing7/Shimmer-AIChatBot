@@ -15,12 +15,12 @@ import type {
 
 // -------------------- API 地址 --------------------
 export const API = {
-  REGISTER_URL: '/api/auth/register/',
-  LOGIN_URL: '/api/auth/token/',
-  TOKEN_REFRESH_URL: '/api/auth/token/refresh/',
-  USERINFO_URL: '/api/auth/me/',
-  USERINFO_UPDATE_URL: '/api/auth/me/',
-  AVATAR_UPLOAD_URL: '/api/auth/avatar/',
+  REGISTER_URL: '/auth/register/',
+  LOGIN_URL: '/auth/token/',
+  TOKEN_REFRESH_URL: '/auth/token/refresh/',
+  USERINFO_URL: '/auth/me/',
+  USERINFO_UPDATE_URL: '/auth/me/',
+  AVATAR_UPLOAD_URL: '/auth/avatar/',
 } as const
 
 export type API = (typeof API)[keyof typeof API]

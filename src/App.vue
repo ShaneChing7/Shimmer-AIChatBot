@@ -1,7 +1,7 @@
 <template>
   <router-view class=" overflow-y-hidden" />
   
-  <Toaster rich-colors position="top-right" />
+  <Toaster rich-colors position="top-center" />
 </template>
 
 <script setup lang="ts">
