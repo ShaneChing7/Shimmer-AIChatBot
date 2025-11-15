@@ -5,7 +5,7 @@
         <div v-if="visible"
             class="fixed flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 top-1/2 left-1/2 z-50 w-full h-full max-h-[500px] max-w-[760px] rounded-[25px] -translate-x-1/2 -translate-y-1/2 shadow-lg">
             <div class="h-13 w-full flex items-center justify-between px-7 py-3">
-                <div class="text-[18px] font-black">系统设置</div>
+                <div class="text-[18px] font-black">{{ t('settings.title')}}</div>
                 <div class="p-1 cursor-pointer" @click="close">
                     <X :size="20"></X>
                 </div>
@@ -26,7 +26,7 @@
                     <div v-if="activeTab === 'general'">
                         <div class="space-y-4">
                             <div class="flex flex-col justify-between">
-                                <span class="text-sm font-medium mb-2">主题</span>
+                                <span class="text-sm font-medium mb-2">{{ t('settings.general.theme') }}</span>
                                 <div class="h-25 flex justify-between items-center px-0">
                                     <div class="h-20 w-38 rounded-[10px] flex flex-col items-center justify-center 
                                                 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 border cursor-pointer
@@ -34,7 +34,7 @@
                                         :class="{ ' bg-muted dark:bg-blue-950': currentTheme === 'light' }"
                                         @click="setTheme('light')">
                                         <Sun :size="18"></Sun>
-                                        <span class="text-[14px]">浅色</span>
+                                        <span class="text-[14px]">{{ t('settings.general.light') }}</span>
                                     </div>
                                     <div class="h-20 w-38 rounded-[10px] flex flex-col items-center justify-center 
                                                 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 border cursor-pointer
@@ -42,7 +42,7 @@
                                         :class="{ ' bg-blue-50 dark:bg-blue-950': currentTheme === 'dark' }"
                                         @click="setTheme('dark')">
                                         <Moon :size="18"></Moon>
-                                        <span class="text-[14px]">深色</span>
+                                        <span class="text-[14px]">{{ t('settings.general.dark') }}</span>
                                     </div>
                                     <div class="h-20 w-38 rounded-[10px] flex flex-col items-center justify-center 
                                                 transition-colors duration-200 hover:bg-gray-100 dark:hover:bg-gray-800 border cursor-pointer
@@ -50,13 +50,13 @@
                                         :class="{ ' bg-blue-50 dark:bg-blue-950': currentTheme === 'system' }"
                                         @click="setTheme('system')">
                                         <Monitor :size="18"></Monitor>
-                                        <span class="text-[14px]">跟随系统</span>
+                                        <span class="text-[14px]">{{ t('settings.general.followSys') }}</span>
                                     </div>
                                 </div>
                             </div>
                             <!-- 语言选择 -->
                             <div class="flex items-center justify-between">
-                                <span class="text-sm font-medium">语言</span>
+                                <span class="text-sm font-medium">{{ t('settings.general.lang') }}</span>
                                 <div class="relative w-36">
                                     <div class="
                                             cursor-pointer border rounded-lg w-full
@@ -122,16 +122,19 @@
 import { ref, computed, watch,onUnmounted } from 'vue'
 import { defineProps, defineEmits } from 'vue';
 import { Settings, User, Database, FileText, X, Sun, Moon, Monitor, ChevronDown,Check } from 'lucide-vue-next'
+import { useI18n } from 'vue-i18n'
+import dayjs from 'dayjs'
 
+const { t,locale } = useI18n()
 const props = defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ (e: 'update:visible', val: boolean): void }>();
 // 语言选项数据
 const languageOptions = [
-    { value: 'zh', label: '中文' },
+    { value: 'zh-CN', label: '中文' },
     { value: 'en', label: 'English' },
 ];
 // 下拉框状态
-const selectedLang = ref('zh'); // 默认选中中文
+const selectedLang = ref(locale.value); // 默认选中中文
 const isDropdownOpen = ref(false);
 // ⚡️ 用于引用下拉组件根元素的 Ref ⚡️
 const dropdownRef = ref<HTMLElement | null>(null); 
@@ -139,12 +142,20 @@ const dropdownRef = ref<HTMLElement | null>(null);
 const selectedLangLabel = computed(() => 
     languageOptions.find(opt => opt.value === selectedLang.value)?.label
 );
+// 将 vue-i18n 的 locale 映射到 dayjs 的 locale
+// dayjs 的语言命名可能不同（例如 vue-i18n 用 'zh-CN', dayjs 用 'zh-cn'）
+const mapLocale = (lang: string) => (lang === 'zh-CN' ? 'zh-cn' : 'en')
 //选择语言触发的函数
-const selectLang = (value: string) => {
-    selectedLang.value = value;
+const selectLang = (lang: string) => {
+    locale.value = lang 
+    localStorage.setItem('lang', lang)
+    // <--- 关键同步步骤
+    dayjs.locale(mapLocale(lang)) // 设置 DayJS 的全局 locale
+    selectedLang.value = lang;
     isDropdownOpen.value = false; // 选中后关闭下拉框
-    console.log('选择的语言:', value);
 };
+// 确保组件初始化时 DayJS locale 是正确的
+dayjs.locale(mapLocale(locale.value))
 // 处理外部点击关闭下拉菜单 
 // 全局点击处理函数
 const handleClickOutside = (event: MouseEvent) => {
@@ -173,16 +184,18 @@ onUnmounted(() => {
     // 组件卸载时，确保移除监听器，防止内存泄漏
     document.removeEventListener('mousedown', handleClickOutside);
 });
-const menuItems = [
-    { id: 'general', label: '通用设置', icon: Settings },
-    { id: 'account', label: '账号管理', icon: User },
-    { id: 'data', label: '数据管理', icon: Database },
-    { id: 'terms', label: '服务协议', icon: FileText },
-];
+const menuItems = computed(() => {
+    return [
+        { id: 'general', label: t('settings.menu.general'), icon: Settings },
+        { id: 'account', label: t('settings.menu.account'), icon: User },
+        { id: 'data', label: t('settings.menu.data'), icon: Database },
+        { id: 'terms', label: t('settings.menu.terms'), icon: FileText },
+    ]
+});
 
 const activeTab = ref('general');
-// ⚡️ 新增主题状态管理 ⚡️
-const currentTheme = ref('light'); // 默认主题为浅色
+// 从 localStorage 读取，若无则使用 'light' 作为默认值
+const currentTheme = ref(localStorage.getItem('theme') || 'light');
 
 const setTheme = (themeName: string) => {
     currentTheme.value = themeName;
@@ -190,7 +203,6 @@ const setTheme = (themeName: string) => {
     // 例如：document.documentElement.classList.remove('dark');
     //      if (themeName === 'dark') document.documentElement.classList.add('dark');
     //      或根据 system 主题监听 prefers-color-scheme
-    console.log('当前主题设置为:', themeName);
 };
 
 // 你可能希望在组件加载时从 localStorage 读取主题，或者在保存时存储主题。

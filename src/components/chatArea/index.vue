@@ -7,7 +7,7 @@
             </div>
         <div class="min-w-0">
           <h1 class="truncate">{{ activeConversation?.title || "Shimmer" }}</h1>
-          <p class="text-sm text-muted-foreground">你的AI小助手</p>
+          <p class="text-sm text-muted-foreground">{{t('chat.aiDescription')}}</p>
         </div>
       </div>
     </div>
@@ -47,7 +47,7 @@
           leave-to-class="opacity-0"
         >
           <h2 v-show="!currentMessages.length" class="absolute top-[-50px] text-3xl font-semibold">
-            {{getTime()+'好！ '+userStore.username }}
+            {{welcomeMessage + userStore.username }}
           </h2>
         </Transition>
         <div
@@ -55,7 +55,7 @@
           class="shadow-2xl flex flex-col justify-center border rounded-3xl bg-background transition-all duration-500 ease-in-out"
           :class="{ 'is-expanded': isExpanded }"
           :style="{
-            width: currentMessages.length > 0 ? '920px' : '400px',
+            width: currentMessages.length > 0 ? '920px' : '450px',
             minHeight: '110px',
             height: 'auto'
           }"
@@ -67,7 +67,7 @@
               @keydown="handleKeydown"
               @input="autoGrow"
               :disabled="loading"
-              placeholder="输入你的问题... (Shift+Enter 换行)"
+              :placeholder="t('chat.inputPlaceholder')"
               class="textarea-content w-full rounded-lg px-4 py-2 outline-none text-foreground bg-transparent resize-none transition-all duration-300"
               rows="1"
               style="max-height: 120px; overflow-y: auto; padding-right: 40px;"
@@ -158,9 +158,11 @@ import { toast } from 'vue-sonner';
 import { useChatStore } from '@/store/modules/chat';
 import useUserStore from '@/store/modules/user';
 import { storeToRefs } from 'pinia';
-import { getTime } from '@/utils/time';
+import { useI18n } from 'vue-i18n'
+import { getTimeKey } from '@/utils/time';
 import { GET_MODEL, SET_MODEL } from '@/utils/model';
 
+const { t } = useI18n()
 const chatStore = useChatStore();
 const userStore = useUserStore();
 const isLoggedIn = computed(() => userStore.isLoggedIn);
@@ -170,6 +172,11 @@ const activeConversation = computed(() => chatStore.currentSession);
 const currentMessages = computed(() => chatStore.currentMessages);
 const { loading } = storeToRefs(chatStore)
 
+//欢迎语句
+const welcomeMessage = computed(() => {
+  const key = getTimeKey()
+  return t(`common.userWelcome.${key}`) + '! '
+})
 
 // 消息输入和发送逻辑
 const input = ref('')
@@ -228,23 +235,23 @@ const handleKeydown = (e: KeyboardEvent) => {
 // sendMessage 函数
 const sendMessage = async () => {
   if (loading.value) {
-    toast.warning('会话数据正在加载中，请稍候再发送。');
+    toast.warning(t('chat.sessionLoading'));
     return;
   }
 
   const messageContent = input.value.trim();
   
   if (!isLoggedIn.value) {
-    toast.warning('请先登录或注册才能发送消息！');
+    toast.warning(t('chat.needLogin'));
     return;
   }
   
   if (!messageContent) return
 
   if (!chatStore.currentSession?.id) {
-    const created = await chatStore.createSession('新会话标题');
+    const created = await chatStore.createSession(t("session.newSessionTitle"));
     if (!created) {
-      toast.error(chatStore.error || '创建会话失败，请稍候重试。');
+      toast.error(chatStore.error || t('chat.createSessionFailed'));
       return;
     }
   }
@@ -259,7 +266,7 @@ const sendMessage = async () => {
   try {
     await chatStore.sendMessage(messageContent, selectedModel.value);
   } catch (error) {
-    toast.error(chatStore.error || '消息发送失败，请检查网络。');
+    toast.error(chatStore.error || t('chat.messageSendFailed'));
   }
 }
 

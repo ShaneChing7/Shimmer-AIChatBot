@@ -9,7 +9,7 @@
           <div v-if="isCompletelyEmpty" class="flex items-center gap-2 py-1">
             <div class="flex gap-1">
               <div class="typing-cursor">
-                <span>AI 正在输入</span>
+                <span>{{t('chat.aiTyping')}}</span>
                 <div class="cursor"></div>
               </div>
             </div>
@@ -30,7 +30,7 @@
                 
                 <div class="flex items-center gap-2 flex-1">
                   <span class="text-xs font-semibold text-black dark:text-blue-400">
-                    思考过程
+                    {{t('chat.thinkingProcess')}}
                   </span>
                   
                   <!--   实时推理状态指示器 -->
@@ -40,12 +40,12 @@
                       <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
                       <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
                     </div>
-                    <span class="text-xs text-gray-400 font-medium">推理中</span>
+                    <span class="text-xs text-gray-400 font-medium">{{t('chat.reasoning')}}</span>
                   </div>
                   
                   <!-- 推理完成指示 -->
                   <span v-else class="text-xs text-gray-500 dark:text-gray-400">
-                    ({{ reasoningCharCount }} 字)
+                    ({{ reasoningCharCount }} {{t('common.word')}})
                   </span>
                 </div>
 
@@ -90,7 +90,7 @@
                     <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></span>
                     <span class="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></span>
                   </div>
-                  <span class="text-xs">正在生成回答...</span>
+                  <span class="text-xs">{{t('chat.generatingAnswer')}}</span>
                 </div>
               </div>
             </div>
@@ -112,7 +112,7 @@
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>分享</p>
+                  <p>{{t('chat.share')}}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -125,7 +125,7 @@
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>重试</p>
+                  <p>{{t('chat.retry')}}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -144,7 +144,7 @@
                   </div>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>{{ copySuccess ? '已复制' : '复制' }}</p>
+                  <p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -176,8 +176,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { defineProps, computed, ref,  } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
-import type { ChatMessage, MessageSender } from '@/api/chat/type'
-import { Bot, Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle,Check } from 'lucide-vue-next'
+import type { ChatMessage } from '@/api/chat/type'
+import { Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle,Check } from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,
@@ -188,7 +188,9 @@ import {
 import { useChatStore } from "@/store/modules/chat"
 import { GET_MODEL } from "@/utils/model"
 import { storeToRefs } from "pinia"
+import { useI18n } from 'vue-i18n'
 
+const { t } = useI18n()
 const userStore = useUserStore()
 const chatStore = useChatStore()
 const props = defineProps<{
@@ -269,27 +271,27 @@ const handleAction = async (actionType: 'share' | 'retry' | 'copy') => {
       handleCopy();
       break;
     default:
-      console.warn(`未知的操作类型: ${actionType}`);
+      console.warn(`${t('chat.unknownActionType')}: ${actionType}`);
   }
 }
 
 const handleShare = () => {
-  const shareText = `来自 AI 的消息: ${props.message.content}`;
+  const shareText = `${t('chat.sharePrefix')}: ${props.message.content}`;
   
   if (navigator.share) {
     navigator.share({
-      title: 'AI 聊天记录分享',
+      title: t('chat.shareTitle'),
       text: shareText,
       url: window.location.href
     })
     .then(() => {
-      console.log('分享成功');
+      console.log(t('chat.shareSuccess'));
     })
     .catch((error) => {
-      console.error('分享失败', error);
+      console.error(t('chat.shareFaild'), error);
     });
   } else {
-    console.log('浏览器不支持 Web Share API,回退到复制功能');
+    console.log(t('chat.browserNotSupportShare'));
     handleCopy();
   }
 }
@@ -307,7 +309,7 @@ const handleCopy = async () => {
   
   // 如果有推理过程，可以选择一起复制
   if (props.message.reasoning_content) {
-    contentToCopy = `【思考过程】\n${props.message.reasoning_content}\n\n【回答】\n${contentToCopy}`;
+    contentToCopy = `[${t('chat.thinkingProcess')}]\n${props.message.reasoning_content}\n\n[${t('chat.answer')}]\n${contentToCopy}`;
   }
 
   if (!contentToCopy) {
@@ -330,7 +332,7 @@ const handleCopy = async () => {
     }, 1500)
     
   } catch (err) {
-    console.error('复制到剪贴板失败:', err);
+    console.error(t('chat.copyFailed'), err);
   }
 }
 </script>

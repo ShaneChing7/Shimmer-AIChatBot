@@ -1,11 +1,10 @@
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc";    
 import relativeTime from "dayjs/plugin/relativeTime";
-import "dayjs/locale/zh-cn";
-
+import 'dayjs/locale/zh-cn'; // 中文
+import 'dayjs/locale/en';
 dayjs.extend(utc);    
 dayjs.extend(relativeTime);
-dayjs.locale("zh-cn");
 
 export const  formatSessionTime = (isoString:string) => {
   const date = dayjs(isoString).local();
@@ -20,17 +19,11 @@ export const  formatSessionTime = (isoString:string) => {
   }
 }
 
-export const getTime = () => {
-	let message = ''
-	const hours = new Date().getHours()
-	if (hours <= 9) {
-		message = '早上'
-	} else if (hours <= 12) {
-		message = '上午'
-	} else if (hours <= 18) {
-		message = '下午'
-	} else {
-		message = '晚上'
-	}
-	return message
+export const  getTimeKey = ()  => {
+  const hour = new Date().getHours()
+  if (hour >= 5 && hour < 9) return 'morning'
+  if (hour >= 9 && hour < 12) return 'lateMorning'
+  if (hour >= 12 && hour < 18) return 'afternoon'
+  return 'evening'
 }
+

@@ -3,16 +3,16 @@
     
     <DialogContent class="sm:max-w-[425px]">
       <DialogHeader>
-        <DialogTitle>修改会话标题</DialogTitle>
+        <DialogTitle>{{t("session.editSessionTitle")}}</DialogTitle>
         <DialogDescription>
-          请输入新的会话标题，点击保存修改。
+          {{t("session.editSessionText")}}
         </DialogDescription>
       </DialogHeader>
       
       <div class="grid gap-4 py-4">
         <div class="grid grid-cols-4 items-center gap-0">
           <Label for="title-input" class="text-right">
-            新标题
+            {{t("session.newTitle")}}
           </Label>
           <Input id="title-input" v-model="titleValue" class="col-span-3 focus:ring-1" @keyup.enter="saveTitle" />
         </div>
@@ -20,7 +20,7 @@
       
       <DialogFooter>
         <Button type="submit" @click="saveTitle">
-          保存修改
+          {{t("common.saveEdit")}}
         </Button>
       </DialogFooter>
       
@@ -28,6 +28,7 @@
   </Dialog>
 </template>
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ref, defineProps,watch } from "vue";
 import { useChatStore } from "@/store/modules/chat";
 import type { ChatSession } from "@/api/chat/type";
@@ -39,10 +40,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+const { t } = useI18n()
 const chatStore = useChatStore();
 
 const props = defineProps<{

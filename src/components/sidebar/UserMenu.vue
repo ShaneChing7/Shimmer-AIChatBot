@@ -8,29 +8,31 @@
       <!-- 系统设置 -->
       <div @click="$emit('update:visible',false);$emit('open-settings');" class="flex w-48 mb-1 h-10 items-center rounded-lg hover:bg-muted cursor-pointer px-2 space-x-2 dark:hover:bg-gray-500">
         <Settings class="size-5 text-sidebar-foreground" />
-        <span class="w-full text-left px-1 py-2 text-md text-black dark:text-gray-50">系统设置</span>
+        <span class="w-full text-left px-1 py-2 text-md text-black dark:text-gray-50">{{t("menu.systemSetting")}}</span>
       </div>
 
       <!-- 联系我们 -->
       <div @click="" class="flex w-48 mb-1 h-10 items-center rounded-lg hover:bg-muted cursor-pointer px-2 space-x-2 dark:hover:bg-gray-500">
         <MessageSquare class="size-5 text-sidebar-foreground" />
-        <span class="w-full text-left px-1 py-2 text-md text-black dark:text-gray-50">联系我们</span>
+        <span class="w-full text-left px-1 py-2 text-md text-black dark:text-gray-50">{{t("menu.contactUs")}}</span>
       </div>
 
       <!-- 退出登录 -->
       <div @click="logOut" class="flex w-48 h-10 items-center rounded-lg hover:bg-muted cursor-pointer px-2 space-x-2 dark:hover:bg-gray-500">
         <LogOut class="size-5 text-red-500" />
-        <span class="w-full text-left px-1 py-2 text-md text-red-500">退出登录</span>
+        <span class="w-full text-left px-1 py-2 text-md text-red-500">{{t("menu.logOut")}}</span>
       </div>
     </div>
   </transition>
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Settings, MessageSquare, LogOut } from 'lucide-vue-next';
 import useUserStore from '@/store/modules/user';
 import { useChatStore } from '@/store/modules/chat';
+const { t } = useI18n()
 const userstore = useUserStore()
 const chatStore = useChatStore()
 const props = defineProps<{

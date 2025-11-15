@@ -8,20 +8,20 @@
              rounded-xl -translate-x-1/2 -translate-y-1/2 shadow-2xl p-6 transition-all duration-300 ease-out">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-black">
-          {{ isLoginMode ? '账号登录' : '注册新账号' }}
+           {{ isLoginMode ? t('auth.modalTitleLogin') : t('auth.modalTitleRegister') }}
         </h2>
-        <div class="p-1 cursor-pointer rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          @click="closeModal">
-          <X :size="20"></X>
+        <div aria-label="close" :title="t('auth.close')" class="p-1 cursor-pointer rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          @click="closeModal" >
+          <X :size="20" ></X>
         </div>
       </div>
 
       <div class="space-y-4">
 
         <div class="flex flex-col">
-          <label for="username" class="text-sm font-medium mb-1">用户名</label>
+          <label for="username" class="text-sm font-medium mb-1">{{ t('auth.usernameLabel') }}</label>
           <div class="border rounded-lg ">
-            <input id="username" v-model="formData.username" type="text" placeholder="请输入用户名 (3-20个字符)" class="w-full px-4 py-2.5 
+            <input id="username" v-model="formData.username" type="text" :placeholder="t('auth.usernamePlaceholder')" class="w-full px-4 py-2.5 
          border rounded-lg 
          bg-gray-50 dark:bg-gray-700 
          border-gray-300 dark:border-gray-600 
@@ -33,9 +33,9 @@
         </div>
 
         <div class="flex flex-col">
-          <label for="password" class="text-sm font-medium mb-1">密码</label>
+          <label for="password" class="text-sm font-medium mb-1">{{ t('auth.passwordLabel') }}</label>
           <div class="border rounded-lg ">
-            <input id="password" v-model="formData.password" type="password" placeholder="请输入密码 (至少6位)" class="w-full px-4 py-2.5 
+            <input id="password" v-model="formData.password" type="password" :placeholder="t('auth.passwordPlaceholder')" class="w-full px-4 py-2.5 
          border rounded-lg 
          bg-gray-50 dark:bg-gray-700 
          border-gray-300 dark:border-gray-600 
@@ -47,9 +47,9 @@
         </div>
 
         <div v-if="!isLoginMode" class="flex flex-col">
-          <label for="confirmPassword" class="text-sm font-medium mb-1">确认密码</label>
+          <label for="confirmPassword" class="text-sm font-medium mb-1">{{ t('auth.confirmPasswordLabel') }}</label>
           <div class="border rounded-lg">
-            <input id="confirmPassword" v-model="formData.password2" type="password" placeholder="请再次输入密码"
+            <input id="confirmPassword" v-model="formData.password2" type="password" :placeholder="t('auth.confirmPasswordPlaceholder')"
             class="w-full px-4 py-2.5 
          border rounded-lg 
          bg-gray-50 dark:bg-gray-700 
@@ -69,18 +69,18 @@
                  disabled:bg-gray-400 disabled:cursor-not-allowed">
           <span v-if="isLoading" class="flex items-center justify-center">
             <Loader2 :size="20" class="animate-spin mr-2" />
-            处理中...
+            {{ t('auth.processing') }}
           </span>
-          <span class="dark:text-black" v-else>{{ isLoginMode ? '立即登录' : '立即注册' }}</span>
+          <span class="dark:text-black" v-else>{{ isLoginMode ? t('auth.loginNow') : t('auth.registerNow') }}</span>
         </div>
 
         <div class="mt-4 text-sm text-center">
           <span class="text-gray-500 dark:text-gray-400">
-            {{ isLoginMode ? '还没有账号？' : '已有账号？' }}
+            {{ isLoginMode ? t('auth.noAccountQuestion') : t('auth.haveAccountQuestion') }}
           </span>
           <button type="button" @click="toggleMode"
             class=" cursor-pointer ml-1 text-black hover:text-gray-900 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors">
-            {{ isLoginMode ? '去注册' : '去登录' }}
+              {{ isLoginMode ? t('auth.goToRegister') : t('auth.goToLogin') }}
           </button>
         </div>
       </div>
@@ -90,6 +90,7 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ref, reactive, watch } from 'vue';
 import { X, Loader2 } from 'lucide-vue-next';
 import type { LoginFormData, RegisterFormData } from '@/api/user/type';
@@ -98,7 +99,7 @@ import useUserStore from '@/store/modules/user';
 import { useChatStore } from '@/store/modules/chat';
 // 引入 vue-sonner 的 toast 函数
 import { toast } from 'vue-sonner';
-
+const { t } = useI18n()
 const userStore = useUserStore();
 const chatStore = useChatStore()
 const props = defineProps<{ visible: boolean }>();
@@ -141,23 +142,23 @@ const validateForm = (): boolean => {
 
   // 1. 用户名校验
   if (formData.username.length < 3 || formData.username.length > 20) {
-    errors.username = '用户名长度需在 3 到 20 个字符之间';
+    errors.username = t('auth.usernameLengthError');
     isValid = false;
   }
 
   // 2. 密码校验
   if (formData.password.length < 6) {
-    errors.password = '密码长度不能少于 6 位';
+    errors.password = t('auth.passwordLengthError');
     isValid = false;
   }
 
   // 3. 确认密码校验 (仅在注册模式下)
   if (!isLoginMode.value) {
     if (formData.password2 === '') {
-      errors.confirmPassword = '请再次输入密码';
+      errors.confirmPassword = t('auth.confirmPasswordEmpty');
       isValid = false;
     } else if (formData.password2 !== formData.password) {
-      errors.confirmPassword = '两次输入的密码不一致';
+      errors.confirmPassword = t('auth.confirmPasswordMismatch')
       isValid = false;
     }
   }
@@ -191,13 +192,13 @@ const handleSubmit = async () => {
     if (isLoginMode.value) {
       await userStore.userLogin(formData);
       closeModal(); // 成功后关闭模态框
-      toast.success(`登录成功! 用户名: ${formData.username}`)
+      toast.success(t('auth.loginSuccess', { username: formData.username }));
       await userStore.userInfo()
       await chatStore.fetchSessions()
       
     } else {
       await userStore.userRegister(formData);
-      toast.success(`注册成功!`)
+      toast.success(t('auth.registerSuccess'));
       isLoginMode.value = true
     }
 
@@ -205,7 +206,7 @@ const handleSubmit = async () => {
   } catch (error) {
     console.error('API Error:', error);
     // 实际处理错误，例如显示错误信息
-    toast.error(isLoginMode.value ? '登录失败，请检查用户名或密码。' : '注册失败，用户名可能已存在。')
+    toast.error(isLoginMode.value ? t('auth.loginFailed') : t('auth.registerFailed'));
     
   } finally {
     isLoading.value = false;

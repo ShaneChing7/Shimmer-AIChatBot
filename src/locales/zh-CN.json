@@ -1,0 +1,126 @@
+{
+  "common": {
+    "ok": "确定",
+    "cancel": "取消",
+    "submit": "提交",
+    "loading": "加载中...",
+    "save": "保存",
+    "error": "错误",
+    "saveEdit":"保存修改",
+    "word":"字",
+    "userWelcome": {
+      "morning": "早上好",
+      "lateMorning": "上午好",
+      "afternoon": "下午好",
+      "evening": "晚上好"
+    }
+  },
+  "nav": {
+    "home": "首页",
+    "chat": "聊天",
+    "profile": "个人中心"
+  },
+  "validation": {
+    "required": "此项为必填项",
+    "emailInvalid": "请输入有效的电子邮件地址"
+  },
+  "toast": {
+    "loadFailedTitle": "加载失败",
+    "loadSessionFailed": "加载会话详情失败",
+    "cancelDelete": "已取消删除",
+    "deleteSuccess": "删除成功!",
+    "deleteFailedTitle": "删除失败",
+    "deleteFailedDesc": "请稍后重试",
+    "deleteOperationFailedTitle": "删除操作失败",
+    "networkOrServerError": "网络错误或服务器异常"
+  },
+  "auth": {
+    "pleaseLoginOrRegister": "请先登录/注册",
+    "modalTitleLogin": "账号登录",
+    "modalTitleRegister": "注册新账号",
+    "usernameLabel": "用户名",
+    "usernamePlaceholder": "请输入用户名 (3-20个字符)",
+    "passwordLabel": "密码",
+    "passwordPlaceholder": "请输入密码 (至少6位)",
+    "confirmPasswordLabel": "确认密码",
+    "confirmPasswordPlaceholder": "请再次输入密码",
+
+    "usernameLengthError": "用户名长度需在 3 到 20 个字符之间",
+    "passwordLengthError": "密码长度不能少于 6 位",
+    "confirmPasswordEmpty": "请再次输入密码",
+    "confirmPasswordMismatch": "两次输入的密码不一致",
+
+    "processing": "处理中...",
+    "loginNow": "立即登录",
+    "registerNow": "立即注册",
+
+    "noAccountQuestion": "还没有账号？",
+    "haveAccountQuestion": "已有账号？",
+    "goToRegister": "去注册",
+    "goToLogin": "去登录",
+
+    "loginSuccess": "登录成功! 用户名: {username}",
+    "registerSuccess": "注册成功!",
+    "loginFailed": "登录失败，请检查用户名或密码。",
+    "registerFailed": "注册失败，用户名可能已存在。",
+
+    "close": "关闭"
+  },
+  "session": {
+    "newSession": "开启新对话",
+    "newSessionTitle": "新会话",
+    "editSessionTitle":"修改会话标题",
+    "editSessionText":"请输入新的会话标题，点击保存修改",
+    "newTitle":"新标题",
+    "deleteConfirmTitle": "确认删除?",
+    "deleteConfirmText": "此操作将永久删除该会话及其所有消息,是否继续?"
+  },
+  "chat":{
+    "aiDescription":"你的AI小助手",
+    "inputPlaceholder": "请输入你的问题...(Shift+Enter 换行)",
+    "aiTyping":"AI 正在输入",
+    "thinkingProcess":"思考过程",
+    "reasoning":"推理中",
+    "generatingAnswer":"正在生成回答...",
+    "share":"分享",
+    "retry":"重试",
+    "copy":"复制",
+    "copied":"已复制",
+    "unknownActionType": "未知的操作类型",
+    "shareTitle": "AI 聊天记录分享",
+    "sharePrefix": "来自 AI 的消息",
+    "browserNotSupportShare": "浏览器不支持 Web Share API，回退到复制功能",
+    "shareSuccess": "分享成功",
+    "shareFailed": "分享失败",
+    "answer": "回答",
+    "copyFailed": "复制到剪贴板失败",
+    "sessionLoading": "会话数据正在加载中，请稍候再发送。",
+    "needLogin": "请先登录或注册才能发送消息！",
+    "createSessionFailed": "创建会话失败，请稍候重试。",
+    "messageSendFailed": "消息发送失败，请检查网络。"
+  },
+  "menu":{
+    "systemSetting":"系统设置",
+    "contactUs":"联系我们",
+    "logOut":"退出登录"
+  },
+  "settings":{
+    "title":"系统设置",
+    "menu":{
+        "general":"通用设置",
+        "account":"账号管理",
+        "data":"数据管理",
+        "terms":"服务协议"
+    },
+    "general":{
+        "theme":"主题",
+        "light":"浅色",
+        "dark":"深色",
+        "followSys":"跟随系统",
+        "lang":"语言"
+    },
+    "account":{
+        "title":"账号管理"
+    }
+  }
+}

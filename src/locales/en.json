@@ -1,0 +1,126 @@
+{
+  "common": {
+    "ok": "OK",
+    "cancel": "Cancel",
+    "submit": "Submit",
+    "loading": "Loading...",
+    "save": "Save",
+    "error": "Error",
+    "saveEdit": "Save Changes",
+    "word":"words",
+    "userWelcome": {
+      "morning": "Good morning",
+      "lateMorning": "Good late morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    }
+  },
+  "nav": {
+    "home": "Home",
+    "chat": "Chat",
+    "profile": "Profile"
+  },
+  "validation": {
+    "required": "This field is required",
+    "emailInvalid": "Please enter a valid email address"
+  },
+  "toast": {
+    "loadFailedTitle": "Load Failed",
+    "loadSessionFailed": "Failed to load session details",
+    "cancelDelete": "Deletion cancelled",
+    "deleteSuccess": "Delete succeeded!",
+    "deleteFailedTitle": "Delete failed",
+    "deleteFailedDesc": "Please try again later",
+    "deleteOperationFailedTitle": "Delete operation failed",
+    "networkOrServerError": "Network error or server exception"
+  },
+  "auth": {
+    "pleaseLoginOrRegister": "Login/Register First",
+    "modalTitleLogin": "Log In",
+    "modalTitleRegister": "Register New Account",
+    "usernameLabel": "Username",
+    "usernamePlaceholder": "Please enter a username (3-20 characters)",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Please enter a password (at least 6 characters)",
+    "confirmPasswordLabel": "Confirm Password",
+    "confirmPasswordPlaceholder": "Please enter the password again",
+
+    "usernameLengthError": "Username must be between 3 and 20 characters",
+    "passwordLengthError": "Password must be at least 6 characters",
+    "confirmPasswordEmpty": "Please enter the password again",
+    "confirmPasswordMismatch": "The two passwords do not match",
+
+    "processing": "Processing...",
+    "loginNow": "Log In",
+    "registerNow": "Register",
+
+    "noAccountQuestion": "Don't have an account?",
+    "haveAccountQuestion": "Already have an account?",
+    "goToRegister": "Register",
+    "goToLogin": "Log In",
+
+    "loginSuccess": "Login successful! Username: {username}",
+    "registerSuccess": "Registration successful!",
+    "loginFailed": "Login failed, please check your username or password.",
+    "registerFailed": "Registration failed, username may already exist.",
+
+    "close": "Close"
+  },
+  "session": {
+    "newSession": "Start New Chat",
+    "newSessionTitle": "New Session",
+    "editSessionTitle": "Edit Session Title",
+    "editSessionText": "Please enter a new session title and click save",
+    "newTitle": "New Title",
+    "deleteConfirmTitle": "Confirm Delete?",
+    "deleteConfirmText": "This will permanently delete this session and all messages. Continue?"
+  },
+  "chat":{
+    "aiDescription":"Your AI assistant",
+    "inputPlaceholder": "Type your question... (Shift+Enter for newline)",
+    "aiTyping":"AI is typing",
+    "thinkingProcess":"Thinking Process",
+    "reasoning":"Reasoning",
+    "generatingAnswer":"Generating answer…",
+    "share":"Share",
+    "retry":"Retry",
+    "copy":"Copy",
+    "copied":"Copied",
+    "unknownActionType": "Unknown action type",
+    "shareTitle": "AI Chat Share",
+    "sharePrefix": "Message from AI",
+    "browserNotSupportShare": "Browser does not support Web Share API, fallback to copy",
+    "shareSuccess": "Share successful",
+    "shareFailed": "Share failed",
+    "answer": "Answer",
+    "copyFailed": "Failed to copy to clipboard",
+    "sessionLoading": "Session data is loading, please wait before sending.",
+      "needLogin": "Please log in or register before sending messages!",
+      "createSessionFailed": "Failed to create session, please try again later.",
+      "messageSendFailed": "Failed to send message, please check your network."
+},
+  "menu": {
+    "systemSetting": "System Settings",
+    "contactUs": "Contact Us",
+    "logOut": "Log Out"
+  },
+  "settings": {
+    "title": "System Settings",
+    "menu": {
+      "general": "General",
+      "account": "Profile",
+      "data": "Data",
+      "terms": "Terms"
+    },
+    "general": {
+      "theme": "Theme",
+      "light": "Light",
+      "dark": "Dark",
+      "followSys": "Follow System",
+      "lang": "Language"
+    },
+    "account": {
+      "title": "Account Management"
+    }
+  }
+}

@@ -16,7 +16,7 @@
           <SquarePen />
         </div>
         <div class="pl-2 text-black dark:text-white whitespace-nowrap select-none ">
-          <span v-show="isExpanded">开启新对话</span>
+          <span v-show="isExpanded">{{ t('session.newSession') }}</span>
         </div>
       </div>
     </div>
@@ -75,7 +75,7 @@
             <AvatarFallback>{{ userStore.username[0] }}</AvatarFallback>
           </Avatar>
           <span v-show="isExpanded" class="text-sm text-sidebar-foreground font-medium">
-            {{isLoggedIn ? userStore.username : '请先登录/注册'}}
+            {{isLoggedIn ? userStore.username : t('auth.pleaseLoginOrRegister')}}
           </span>
         </div>
         <div v-show="isExpanded" class="relative rounded-md">
@@ -101,15 +101,15 @@
     <AlertDialog v-model:open="showDeleteDialog">
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>警告:确认删除?</AlertDialogTitle>
+          <AlertDialogTitle>{{ t('session.deleteConfirmTitle') }}</AlertDialogTitle>
           <AlertDialogDescription>
-            此操作将永久删除该会话及其所有消息,是否继续?
+            {{ t('session.deleteConfirmText') }}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel class="cursor-pointer" @click="handleCancelDelete">取消</AlertDialogCancel>
+          <AlertDialogCancel class="cursor-pointer" @click="handleCancelDelete">{{ t('common.cancel') }}</AlertDialogCancel>
           <AlertDialogAction @click="handleConfirmDelete"
-            class="border !bg-black cursor-pointer">确定</AlertDialogAction>
+            class="border !bg-black cursor-pointer">{{ t('common.ok') }}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -117,9 +117,9 @@
 </template>
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
-
 import Session from './Session.vue';
 import CollapseButton from './CollapseButton.vue';
 import UserMenu from './UserMenu.vue';
@@ -137,13 +137,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-
 import useUserStore from '@/store/modules/user';
 const userStore = useUserStore()
 const isLoggedIn = computed(() => userStore.isLoggedIn)
 
 import { useChatStore } from '@/store/modules/chat';
 const chatStore = useChatStore();
+const { t } = useI18n()
 
 const sessions = computed(() => chatStore.sessions || []);
 const menuVisible = ref(false);
@@ -296,8 +296,8 @@ const selectSession = async (sessionId: number) => {
   const success = await chatStore.fetchSessionDetail(sessionId);
 
   if (!success) {
-    toast.error('加载失败', {
-      description: chatStore.error || '加载会话详情失败',
+    toast.error(t('toast.loadFailedTitle'), {
+      description: chatStore.error || t('toast.loadSessionFailed'),
     })
   }
   // 注意: 滚动由 watch(currentSession) 自动处理
@@ -321,7 +321,7 @@ const deleteSession = (id: number) => {
 
 const handleCancelDelete = () => {
   sessionToDelete.value = null;
-  toast.info('已取消删除');
+  toast.info(t('toast.cancelDelete'));
 }
 
 const handleConfirmDelete = async () => {
@@ -334,15 +334,15 @@ const handleConfirmDelete = async () => {
     const success = await chatStore.deleteSession(id);
 
     if (success) {
-      toast.success('删除成功!');
+      toast.success(t('toast.deleteSuccess'));
     } else {
-      toast.error('删除失败', {
-        description: chatStore.error || '请稍后重试',
+      toast.error(t('toast.deleteFailedTitle'), {
+        description: chatStore.error || t('toast.deleteFailedDesc'),
       });
     }
   } catch (error) {
-    toast.error('删除操作失败', {
-      description: '网络错误或服务器异常',
+    toast.error(t('toast.deleteOperationFailedTitle'), {
+      description: t('toast.networkOrServerError'),
     });
   }
 }
