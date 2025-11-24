@@ -6,8 +6,8 @@
     "loading": "加载中...",
     "save": "保存",
     "error": "错误",
-    "saveEdit":"保存修改",
-    "word":"字",
+    "saveEdit": "保存修改",
+    "word": "字",
     "userWelcome": {
       "morning": "早上好",
       "lateMorning": "上午好",
@@ -44,49 +44,44 @@
     "passwordPlaceholder": "请输入密码 (至少6位)",
     "confirmPasswordLabel": "确认密码",
     "confirmPasswordPlaceholder": "请再次输入密码",
-
     "usernameLengthError": "用户名长度需在 3 到 20 个字符之间",
     "passwordLengthError": "密码长度不能少于 6 位",
     "confirmPasswordEmpty": "请再次输入密码",
     "confirmPasswordMismatch": "两次输入的密码不一致",
-
     "processing": "处理中...",
     "loginNow": "立即登录",
     "registerNow": "立即注册",
-
     "noAccountQuestion": "还没有账号？",
     "haveAccountQuestion": "已有账号？",
     "goToRegister": "去注册",
     "goToLogin": "去登录",
-
     "loginSuccess": "登录成功! 用户名: {username}",
     "registerSuccess": "注册成功!",
     "loginFailed": "登录失败，请检查用户名或密码。",
     "registerFailed": "注册失败，用户名可能已存在。",
-
     "close": "关闭"
   },
   "session": {
     "noSession": "暂无会话",
     "newSession": "开启新对话",
     "newSessionTitle": "新会话",
-    "editSessionTitle":"修改会话标题",
-    "editSessionText":"请输入新的会话标题，点击保存修改",
-    "newTitle":"新标题",
+    "editSessionTitle": "修改会话标题",
+    "editSessionText": "请输入新的会话标题，点击保存修改",
+    "newTitle": "新标题",
     "deleteConfirmTitle": "确认删除?",
     "deleteConfirmText": "此操作将永久删除该会话及其所有消息,是否继续?"
   },
-  "chat":{
-    "aiDescription":"你的AI小助手",
+  "chat": {
+    "aiDescription": "你的AI小助手",
     "inputPlaceholder": "请输入你的问题...(Shift+Enter 换行)",
-    "aiTyping":"AI 正在输入",
-    "thinkingProcess":"思考过程",
-    "reasoning":"推理中",
-    "generatingAnswer":"正在生成回答...",
-    "share":"分享",
-    "retry":"重试",
-    "copy":"复制",
-    "copied":"已复制",
+    "aiTyping": "AI 正在输入",
+    "thinkingProcess": "思考过程",
+    "reasoning": "推理中",
+    "generatingAnswer": "正在生成回答...",
+    "share": "分享",
+    "retry": "重试",
+    "copy": "复制",
+    "copied": "已复制",
     "unknownActionType": "未知的操作类型",
     "shareTitle": "AI 聊天记录分享",
     "sharePrefix": "来自 AI 的消息",
@@ -100,28 +95,97 @@
     "createSessionFailed": "创建会话失败，请稍候重试。",
     "messageSendFailed": "消息发送失败，请检查网络。"
   },
-  "menu":{
-    "systemSetting":"系统设置",
-    "contactUs":"联系我们",
-    "logOut":"退出登录"
+  "menu": {
+    "systemSetting": "系统设置",
+    "contactUs": "联系我们",
+    "logOut": "退出登录"
   },
-  "settings":{
-    "title":"系统设置",
-    "menu":{
-        "general":"通用设置",
-        "account":"账号管理",
-        "data":"数据管理",
-        "terms":"服务协议"
+  "contact": {
+      "title": "联系我们",
+      "description": "有疑问、建议或需要帮助？欢迎通过以下任意方式与我们取得联系。",
+      "emailLabel": "邮件支持",
+      "telegramLabel": "电报",
+      "wechatLabel": "微信",
+      "officialInquiry": "官方咨询渠道",
+      "joinChannel": "加入官方频道",
+      "officialAccount": "关注官方号",
+      "copy": "复制",
+      "open": "打开链接",
+      "businessHours": "欢迎留下您的建议与反馈"
     },
-    "general":{
-        "theme":"主题",
-        "light":"浅色",
-        "dark":"深色",
-        "followSys":"跟随系统",
-        "lang":"语言"
+  "settings": {
+    "title": "系统设置",
+    "menu": {
+      "general": "通用设置",
+      "account": "账号管理",
+      "data": "数据管理",
+      "terms": "服务协议"
     },
-    "account":{
-        "title":"账号管理"
+    "general": {
+      "theme": "主题",
+      "light": "浅色",
+      "dark": "深色",
+      "followSys": "跟随系统",
+      "lang": "语言"
+    },
+    "account": {
+      "title": "账号管理",
+      "editProfile": "编辑资料",
+      "nickname": "用户昵称",
+      "nicknameDesc": "修改您的显示名称",
+      "password": "登录密码",
+      "passwordDesc": "修改或重置您的安全密码",
+      "logout": "退出登录",
+      "logoutDesc": "退出当前登录的设备",
+      "changePassword": "修改密码",
+      "oldPassword": "旧密码",
+      "newPassword": "新密码",
+      "confirmNewPassword": "确认新密码",
+      "fillAllFields": "请填写所有字段",
+      "passwordMismatch": "两次输入的密码不一致",
+      "changeSuccess": "密码修改成功，请重新登录",
+      "enterPassword": "请输入您的密码以确认",
+      "invalidImageType": "仅支持 JPG, PNG, GIF 和 WEBP 格式文件。",
+      "imageTooLarge": "图片大小不能超过 10MB。",
+      "avatarUpdateSuccess": "头像更新成功",
+      "uploadFailed": "上传头像失败",
+      "changePasswordFailed": "修改密码失败"
+    },
+    "data": {
+      "storage": "存储空间",
+      "localCache": "本地缓存",
+      "used": "已使用",
+      "clear": "清除",
+      "export": "导出数据",
+      "exportDesc": "下载您的所有聊天记录",
+      "exportBtn": "导出 JSON",
+      "dangerZone": "危险区域",
+      "deleteAccount": "注销账号",
+      "deleteAccountDesc": "永久删除您的账号和所有云端数据",
+      "deleteBtn": "注销",
+      "deleteWarning": "此操作无法撤销。这将永久删除您的账号并从我们的服务器中移除您的所有数据。请输入'DELETE' 确认。",
+      "deleteConfirm":"输入 'DELETE' 以确认此操作",
+      "deleteSuccess": "账号已注销。再见。",
+      "deleteFailed": "注销账号失败"
+    },
+    "terms": {
+      "serviceTitle": "1. 服务条款",
+      "serviceContent": "欢迎使用我们的应用程序。使用我们的服务即表示您同意这些条款。请仔细阅读。我们按“原样”提供此服务，不提供任何担保。",
+      "privacyTitle": "2. 隐私政策",
+      "privacyContent": "我们重视您的隐私。我们仅收集提供服务所需的最少数据。您的数据尽可能存储在本地，并在传输过程中加密。",
+      "userDataTitle": "3. 用户数据",
+      "userDataContent": "您保留对自己数据的完全所有权。您可以随时通过设置面板导出或删除您的数据。",
+      "usageTitle": "4. 使用规范",
+      "usageContent": "您同意不将本服务用于任何非法活动或骚扰他人。违反这些条款可能会导致账号被终止。",
+      "lastUpdated": "最后更新于: 2025年11月20日"
     }
+  },
+  "notFound": {
+      "title": "404",
+      "signalLost": "信号丢失",
+      "description1": "我们似乎进入了未知的深空领域。",
+      "description2": "您要找的页面无法连接。",
+      "backToConsole": "返回主页",
+      "footer": "SYSTEM_ERR_NOT_FOUND // SHIMMER_AI"
   }
 }

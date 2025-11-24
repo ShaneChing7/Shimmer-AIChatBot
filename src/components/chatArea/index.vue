@@ -3,10 +3,10 @@
     <div class="flex border-b border-border h-16 items-center pl-5 flex-none">
       <div class="flex items-center gap-3">
         <div class="size-10 rounded-full bg-primary flex items-center justify-center shimmer-effect glow-effect">
-              <Sparkles class="size-5 text-primary-foreground" />
+              <ShimmerAvatar class="size-9 text-primary-foreground" />
             </div>
         <div class="min-w-0">
-          <h1 class="truncate">{{ activeConversation?.title || "Shimmer" }}</h1>
+          <h1 class="truncate " >{{ activeConversation?.title || "Shimmer" }}</h1>
           <p class="text-sm text-muted-foreground">{{t('chat.aiDescription')}}</p>
         </div>
       </div>
@@ -151,7 +151,8 @@
 </template>
 
 <script setup lang="ts">
-import { Sparkles, Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft } from 'lucide-vue-next'
+import ShimmerAvatar from './ShimmerAvatar.vue';
+import {  Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft } from 'lucide-vue-next'
 import { ref, watch, computed, onUnmounted, nextTick } from 'vue'
 import MessageList from './MessageList.vue'
 import { toast } from 'vue-sonner';

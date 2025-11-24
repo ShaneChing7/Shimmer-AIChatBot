@@ -11,8 +11,8 @@
         <span class="w-full text-left px-1 py-2 text-md text-black dark:text-gray-50">{{t("menu.systemSetting")}}</span>
       </div>
 
-      <!-- 联系我们 -->
-      <div @click="" class="flex w-48 mb-1 h-10 items-center rounded-lg hover:bg-muted cursor-pointer px-2 space-x-2 dark:hover:bg-gray-500">
+      <!-- 联系我们 (已修改) -->
+      <div @click="$emit('update:visible',false);$emit('open-contact');" class="flex w-48 mb-1 h-10 items-center rounded-lg hover:bg-muted cursor-pointer px-2 space-x-2 dark:hover:bg-gray-500">
         <MessageSquare class="size-5 text-sidebar-foreground" />
         <span class="w-full text-left px-1 py-2 text-md text-black dark:text-gray-50">{{t("menu.contactUs")}}</span>
       </div>
@@ -32,6 +32,7 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { Settings, MessageSquare, LogOut } from 'lucide-vue-next';
 import useUserStore from '@/store/modules/user';
 import { useChatStore } from '@/store/modules/chat';
+
 const { t } = useI18n()
 const userstore = useUserStore()
 const chatStore = useChatStore()
@@ -39,9 +40,11 @@ const props = defineProps<{
   visible: boolean
 }>();
 
+// 定义新增的 emit
 const emit = defineEmits<{
   (e: 'update:visible', val: boolean): void
   (e: 'open-settings'): void
+  (e: 'open-contact'): void // 新增
 }>();
 
 // 点击外部关闭菜单

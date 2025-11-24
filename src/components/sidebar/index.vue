@@ -4,6 +4,8 @@
 
     <div class="border-b border-sidebar-border pl-3.5 flex items-center justify-between gap-2 h-16 flex-none">
       <CollapseButton @toggle-sidebar="toggleSidebar" class="mr-3" />
+      
+      
     </div>
 
     <!-- addSession -->
@@ -56,7 +58,10 @@
       <!-- 空状态提示 -->
       <div v-else-if="isExpanded && sessions.length === 0" 
         class="h-full flex items-center justify-center text-sm text-muted-foreground whitespace-nowrap">
-        {{t("session.noSession")}}
+        <!-- {{t("session.noSession")}}  -->
+        <div class="shrink-0 h-full flex items-center justify-center w-full opacity-20">
+          <ShimmerLogo class="shrink-0 size-35 mt-0.5 h-10 select-none" />
+        </div>
       </div>
 
       <!-- 底部遮罩 -->
@@ -68,10 +73,12 @@
 
     <!-- UserSetting -->
     <div class="p-2 mr-0.5 flex-none h-16 select-none " @click.stop="toggleMenu">
+      
       <div class="flex items-center justify-between rounded-[20px] px-2 py-2 hover:bg-muted cursor-pointer">
         <div class="whitespace-nowrap flex items-center space-x-3">
           <Avatar class="w-8 h-8">
             <AvatarImage :src="userStore.avatar" alt="@unovue" />
+            
             <AvatarFallback>{{ userStore.username[0] }}</AvatarFallback>
           </Avatar>
           <span v-show="isExpanded" class="text-sm text-sidebar-foreground font-medium">
@@ -88,11 +95,13 @@
 
     <!-- 底部用户菜单 -->
     <div class="flex-none">
-      <UserMenu v-model:visible="menuVisible" @open-settings="settingModalVisible = true"></UserMenu>
+      <UserMenu v-model:visible="menuVisible" @open-settings="settingModalVisible = true" @open-contact="showContactModal = true"></UserMenu>
     </div>
 
     <!-- 系统设置模态框 -->
     <SettingsModal v-model:visible="settingModalVisible" />
+    <!-- 联系我们模态框 -->
+    <ContactUsModal v-model:visible="showContactModal"/>
 
     <!-- 登录注册模态框 -->
     <LoginModal v-model:visible="loginModalVisible"/>
@@ -117,6 +126,7 @@
 </template>
 
 <script setup lang="ts">
+import ShimmerLogo from './ShimmerLogo.vue'
 import { useI18n } from 'vue-i18n'
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ref, computed, onMounted, watch, nextTick } from 'vue';
@@ -124,6 +134,7 @@ import Session from './Session.vue';
 import CollapseButton from './CollapseButton.vue';
 import UserMenu from './UserMenu.vue';
 import SettingsModal from './SettingsModal.vue';
+import ContactUsModal from './ContactUsModal.vue'; // 引入新组件
 import LoginModal from './LoginModal.vue';
 import { Ellipsis, SquarePen } from "lucide-vue-next";
 import { toast } from 'vue-sonner';
@@ -148,6 +159,7 @@ const { t } = useI18n()
 const sessions = computed(() => chatStore.sessions || []);
 const menuVisible = ref(false);
 const settingModalVisible = ref(false);
+const showContactModal = ref(false); // 控制联系我们模态框
 const showTopShadow = ref(false)
 const showBottomShadow = ref(false)
 const loginModalVisible = ref(false)

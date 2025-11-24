@@ -2,7 +2,7 @@
   <div class="flex w-full mb-4 px-4 mt-2.5" :class="message.sender === 'user' ? 'justify-end' : 'justify-start'">
     <!-- AI 消息 -->
     <div v-if="message.sender === 'ai'" class="flex items-start max-w-[70%] gap-3">
-      <Sparkle class="shrink-0 size-7 mt-0.5"></Sparkle>
+      <!-- <ShimmerAvatar class="shrink-0 size-8 mt-0.5"></ShimmerAvatar> -->
       <div class="flex flex-col w-full">
         <div class="bg-white-200 text-gray-900 dark:text-white dark:bg-muted rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
           <!--   只有在完全没有内容时才显示"正在输入" -->
@@ -177,7 +177,8 @@ import { defineProps, computed, ref,  } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
 import type { ChatMessage } from '@/api/chat/type'
-import { Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Sparkle,Check } from 'lucide-vue-next'
+// import ShimmerAvatar from './ShimmerAvatar.vue';
+import { Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Check } from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,

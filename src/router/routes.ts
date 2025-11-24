@@ -5,14 +5,14 @@ export const constantRoute = [
 		component: () => import('@/views/ChatView/index.vue'), 
 		name: 'chat',
 		meta: {
-			title: 'chat',
+			title: 'Chat',
 		}
 	},
 	
 	{
 		path: '/404',
 		component: () => import('@/views/404/index.vue'),
-		name: '404',
+		name: 'NotFound',
 		meta: {
 			title: '404',
 		},

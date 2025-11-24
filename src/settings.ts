@@ -3,12 +3,9 @@
 // 网站基本信息配置
 export const website = {
 	// 网站标题，会显示在浏览器标签页上
-	title: 'ChatBot',
-	// 网站 Logo，可以是一个相对路径或 URL
-	logo: '/logo.png',
+	title: 'Shimmer',
 	// 网站副标题或描述
 	description: '',
-	logoShow: true,
 }
 
 // // API 接口配置

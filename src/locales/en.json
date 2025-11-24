@@ -7,7 +7,7 @@
     "save": "Save",
     "error": "Error",
     "saveEdit": "Save Changes",
-    "word":"words",
+    "word": "words",
     "userWelcome": {
       "morning": "Good morning",
       "lateMorning": "Good late morning",
@@ -44,26 +44,21 @@
     "passwordPlaceholder": "Please enter a password (at least 6 characters)",
     "confirmPasswordLabel": "Confirm Password",
     "confirmPasswordPlaceholder": "Please enter the password again",
-
     "usernameLengthError": "Username must be between 3 and 20 characters",
     "passwordLengthError": "Password must be at least 6 characters",
     "confirmPasswordEmpty": "Please enter the password again",
     "confirmPasswordMismatch": "The two passwords do not match",
-
     "processing": "Processing...",
     "loginNow": "Log In",
     "registerNow": "Register",
-
     "noAccountQuestion": "Don't have an account?",
     "haveAccountQuestion": "Already have an account?",
     "goToRegister": "Register",
     "goToLogin": "Log In",
-
     "loginSuccess": "Login successful! Username: {username}",
     "registerSuccess": "Registration successful!",
     "loginFailed": "Login failed, please check your username or password.",
     "registerFailed": "Registration failed, username may already exist.",
-
     "close": "Close"
   },
   "session": {
@@ -76,17 +71,17 @@
     "deleteConfirmTitle": "Confirm Delete?",
     "deleteConfirmText": "This will permanently delete this session and all messages. Continue?"
   },
-  "chat":{
-    "aiDescription":"Your AI assistant",
+  "chat": {
+    "aiDescription": "Your AI assistant",
     "inputPlaceholder": "Type your question... (Shift+Enter for newline)",
-    "aiTyping":"AI is typing",
-    "thinkingProcess":"Thinking Process",
-    "reasoning":"Reasoning",
-    "generatingAnswer":"Generating answer…",
-    "share":"Share",
-    "retry":"Retry",
-    "copy":"Copy",
-    "copied":"Copied",
+    "aiTyping": "AI is typing",
+    "thinkingProcess": "Thinking Process",
+    "reasoning": "Reasoning",
+    "generatingAnswer": "Generating answer…",
+    "share": "Share",
+    "retry": "Retry",
+    "copy": "Copy",
+    "copied": "Copied",
     "unknownActionType": "Unknown action type",
     "shareTitle": "AI Chat Share",
     "sharePrefix": "Message from AI",
@@ -96,15 +91,28 @@
     "answer": "Answer",
     "copyFailed": "Failed to copy to clipboard",
     "sessionLoading": "Session data is loading, please wait before sending.",
-      "needLogin": "Please log in or register before sending messages!",
-      "createSessionFailed": "Failed to create session, please try again later.",
-      "messageSendFailed": "Failed to send message, please check your network."
-},
+    "needLogin": "Please log in or register before sending messages!",
+    "createSessionFailed": "Failed to create session, please try again later.",
+    "messageSendFailed": "Failed to send message, please check your network."
+  },
   "menu": {
     "systemSetting": "System Settings",
     "contactUs": "Contact Us",
     "logOut": "Log Out"
   },
+  "contact": {
+      "title": "Contact Us",
+      "description": "Have questions or feedback? Reach out to us through any of the channels below.",
+      "emailLabel": "Email Support",
+      "telegramLabel": "Telegram",
+      "wechatLabel": "WeChat",
+      "officialInquiry": "Official Inquiry",
+      "joinChannel": "Join our channel",
+      "officialAccount": "Official Account",
+      "copy": "Copy",
+      "open": "Open Link",
+      "businessHours": "Leave your suggestions and feedback"
+    },
   "settings": {
     "title": "System Settings",
     "menu": {
@@ -121,7 +129,63 @@
       "lang": "Language"
     },
     "account": {
-      "title": "Account Management"
+      "title": "Account",
+      "editProfile": "Edit Profile",
+      "nickname": "Nickname",
+      "nicknameDesc": "Change your display name",
+      "password": "Password",
+      "passwordDesc": "Update your secure password",
+      "logout": "Log Out",
+      "logoutDesc": "Sign out of this device",
+      "changePassword": "Change Password",
+      "oldPassword": "Old Password",
+      "newPassword": "New Password",
+      "confirmNewPassword": "Confirm New Password",
+      "fillAllFields": "Please fill in all fields",
+      "passwordMismatch": "Passwords do not match",
+      "changeSuccess": "Password changed successfully, please login again",
+      "enterPassword": "Please enter your password to confirm",
+      "invalidImageType": "Only JPG, PNG, GIF, and WEBP files are allowed.",
+      "imageTooLarge": "Image size must be less than 10MB.",
+      "avatarUpdateSuccess": "Avatar updated successfully",
+      "uploadFailed": "Failed to upload avatar",
+      "changePasswordFailed": "Failed to change password"
+    },
+    "data": {
+      "storage": "Storage",
+      "localCache": "Local Cache",
+      "used": "Used",
+      "clear": "Clear",
+      "export": "Export Data",
+      "exportDesc": "Download all your chat history",
+      "exportBtn": "Export JSON",
+      "dangerZone": "Danger Zone",
+      "deleteAccount": "Delete Account",
+      "deleteAccountDesc": "Permanently delete your account and data",
+      "deleteBtn": "Delete",
+      "deleteWarning": "This action cannot be undone. This will permanently delete your account and remove your data from our servers. Type 'DELETE' to confirm.",
+      "deleteConfirm":"Type 'DELETE' to confirm",
+      "deleteSuccess": "Account deleted successfully. Goodbye.",
+      "deleteFailed": "Failed to delete account"
+    },
+    "terms": {
+      "serviceTitle": "1. Terms of Service",
+      "serviceContent": "Welcome to our application. By using our services, you agree to these terms. Please read them carefully. We provide this service \"as is\" without any warranties.",
+      "privacyTitle": "2. Privacy Policy",
+      "privacyContent": "We value your privacy. We collect minimal data necessary to provide the service. Your data is stored locally whenever possible and encrypted in transit.",
+      "userDataTitle": "3. User Data",
+      "userDataContent": "You retain full ownership of your data. You can export or delete your data at any time through the Settings panel.",
+      "usageTitle": "4. Acceptable Use",
+      "usageContent": "You agree not to use the service for any illegal activities or to harass others. Violation of these terms may result in account termination.",
+      "lastUpdated": "Last updated: November 20, 2025"
     }
+  },
+  "notFound": {
+      "title": "404",
+      "signalLost": "Signal Lost",
+      "description1": "We seem to have drifted into an unknown deep space sector.",
+      "description2": "The destination coordinates are unreachable.",
+      "backToConsole": "Return to HomePage",
+      "footer": "SYSTEM_ERR_NOT_FOUND // SHIMMER_AI"
   }
 }

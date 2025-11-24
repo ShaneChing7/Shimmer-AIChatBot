@@ -1,3 +1,5 @@
+// src/api/user/type.ts
+
 // 定义通用返回类型
 export interface ResponseData<T = any> {
   code: number
@@ -20,6 +22,7 @@ export type RegisterResponseData = ResponseData<{
   username: string
   email: string
   avatar: string
+  uid: string
 }>
 
 // -------------------- 登录 --------------------
@@ -45,11 +48,14 @@ export type RefreshResponseData = ResponseData<{
 }>
 
 // -------------------- 获取用户信息 --------------------
+// 后端 UserProfileSerializer 返回的字段: id, username, email, avatar, avatar_url, uid
 export type UserInfoResponseData = ResponseData<{
   id: number
   username: string
   email: string
-  avatar: string
+  avatar: string      // 通常是相对路径或完整路径
+  avatar_url?: string // 后端 SerializerMethodField 返回的完整 URL
+  uid: string
 }>
 
 // 更新用户信息请求体
@@ -65,6 +71,7 @@ export type UserInfoUpdateResponseData = ResponseData<{
   username: string
   email: string
   avatar: string
+  uid: string
 }>
 
 // -------------------- 上传头像 --------------------
@@ -73,9 +80,34 @@ export interface AvatarUploadData {
 }
 
 // 上传头像返回数据
+// 后端 AvatarUploadView 也是返回 UserProfileSerializer 的数据
 export type AvatarUploadResponseData = ResponseData<{
   id: number
   username: string
   email: string
   avatar: string
+  avatar_url?: string
+  uid: string
+}>
+
+// -------------------- 修改密码 --------------------
+export interface PasswordChangeFormData {
+  old_password: string
+  new_password: string
+  new_password2: string
+  refresh_token?: string // 可选：用于修改密码后让 token 失效
+}
+
+export type PasswordChangeResponseData = ResponseData<null>
+
+// -------------------- 注销账号 --------------------
+export interface AccountDeleteFormData {
+  password: string
+  confirmation: string // 必须输入 "DELETE"
+  refresh_token?: string // 可选：用于注销前让 token 失效
+}
+
+export type AccountDeleteResponseData = ResponseData<{
+  username: string
+  id: number
 }>

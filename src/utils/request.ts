@@ -4,6 +4,7 @@ import pinia from '@/store'; // 1. 导入 pinia 实例
 import router from '@/router'
 import useUserStore from '@/store/modules/user'
 import { useChatStore } from '@/store/modules/chat';
+import { toast } from 'vue-sonner';
 const request = axios.create({
 	baseURL: import.meta.env.VITE_APP_BASE_API,
 	timeout: 5000000,
@@ -42,6 +43,8 @@ request.interceptors.response.use(
 		switch (status) {
 			case 400:
 				message = '账号或者密码不正确'
+				
+        // toast.error(message );
 				break
 			case 401:
 				// 7. Token 过期处理
