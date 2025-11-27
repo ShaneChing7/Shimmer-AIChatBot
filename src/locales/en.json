@@ -13,7 +13,9 @@
       "lateMorning": "Good late morning",
       "afternoon": "Good afternoon",
       "evening": "Good evening"
-    }
+    },
+    "file":"file",
+    "image":"image"
   },
   "nav": {
     "home": "Home",

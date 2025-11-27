@@ -1,11 +1,10 @@
 <template>
   <div class="flex w-full mb-4 px-4 mt-2.5" :class="message.sender === 'user' ? 'justify-end' : 'justify-start'">
-    <!-- AI 消息 -->
+    <!-- 🤖 AI 消息  -->
     <div v-if="message.sender === 'ai'" class="flex items-start max-w-[70%] gap-3">
-      <!-- <ShimmerAvatar class="shrink-0 size-8 mt-0.5"></ShimmerAvatar> -->
       <div class="flex flex-col w-full">
         <div class="bg-white-200 text-gray-900 dark:text-white dark:bg-muted rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
-          <!--   只有在完全没有内容时才显示"正在输入" -->
+          
           <div v-if="isCompletelyEmpty" class="flex items-center gap-2 py-1">
             <div class="flex gap-1">
               <div class="typing-cursor">
@@ -15,25 +14,16 @@
             </div>
           </div>
           
-          <!--   有任何内容就显示 -->
           <div v-else class="w-full">
-            <!--   推理过程区域 (如果存在) -->
+            <!-- 推理过程 -->
             <div v-if="hasReasoningContent" class="reasoning-section mb-3">
               <div 
                 class="reasoning-header flex items-center gap-2 p-2 bg-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-lg cursor-pointer  dark:hover:from-gray-600 dark:hover:to-gray-500 transition-all duration-200"
                 @click="toggleReasoning"
               >
-                
-                <Atom   
-                  class="w-4 h-4 text-gray-500" 
-                />
-                
+                <Atom class="w-4 h-4 text-gray-500" />
                 <div class="flex items-center gap-2 flex-1">
-                  <span class="text-xs font-semibold text-black dark:text-blue-400">
-                    {{t('chat.thinkingProcess')}}
-                  </span>
-                  
-                  <!--   实时推理状态指示器 -->
+                  <span class="text-xs font-semibold text-black dark:text-blue-400">{{t('chat.thinkingProcess')}}</span>
                   <div v-if="isReasoningStreaming" class="flex items-center gap-1">
                     <div class="flex gap-0.5">
                       <span class="w-1 h-1 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></span>
@@ -42,47 +32,25 @@
                     </div>
                     <span class="text-xs text-gray-400 font-medium">{{t('chat.reasoning')}}</span>
                   </div>
-                  
-                  <!-- 推理完成指示 -->
-                  <span v-else class="text-xs text-gray-500 dark:text-gray-400">
-                    ({{ reasoningCharCount }} {{t('common.word')}})
-                  </span>
+                  <span v-else class="text-xs text-gray-500 dark:text-gray-400">({{ reasoningCharCount }} {{t('common.word')}})</span>
                 </div>
-
-                <ChevronRight    
-                  class="w-4 h-4 text-gray-500 transition-transform duration-400" 
-                  :class="{ 'rotate-90 ': isReasoningExpanded }"
-                />
+                <ChevronRight class="w-4 h-4 text-gray-500 transition-transform duration-400" :class="{ 'rotate-90 ': isReasoningExpanded }" />
               </div>
               
-              <!--   推理内容 - 支持流式展示 -->
-              <div 
-                v-show="isReasoningExpanded"
-                class="reasoning-content mt-2 p-3 bg-white dark:from-gray-800 dark:to-gray-750 rounded-lg  relative overflow-hidden"
-              >
-                <!-- 流式输出的推理内容 -->
+              <div v-show="isReasoningExpanded" class="reasoning-content mt-2 p-3 bg-white dark:from-gray-800 dark:to-gray-750 rounded-lg relative overflow-hidden">
                 <div class="text-xs text-gray-500 dark:text-gray-300 whitespace-pre-wrap leading-relaxed">
                   {{ message.reasoning_content }}
-                  <!--   推理中显示光标 -->
                   <span v-if="isReasoningStreaming" class="inline-block w-1.5 h-3.5 bg-blue-500 ml-0.5 animate-pulse"></span>
                 </div>
               </div>
             </div>
             
-            <!--   正常回复内容区域 -->
+            <!-- 回答内容 -->
             <div class="answer-content">
-              <!-- 如果正在输出答案，显示渐入动画 -->
-              <div 
-                v-if="hasAnswerContent"
-                class="rendered-content m-1"
-                :class="{ 'streaming-content': isAnswerStreaming }"
-              >
+              <div v-if="hasAnswerContent" class="rendered-content m-1" :class="{ 'streaming-content': isAnswerStreaming }">
                 <Response>{{ message.content }}</Response>
-                <!--   回答中显示光标 -->
                 <span v-if="isAnswerStreaming" class="inline-block w-1.5 h-3.5 bg-gray-600 dark:bg-gray-300 ml-0.5 animate-pulse"></span>
               </div>
-              
-              <!--   如果只有推理内容但还没有答案内容 -->
               <div v-else-if="hasReasoningContent && !hasAnswerContent" class="m-1 py-2">
                 <div class="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                   <div class="flex gap-1">
@@ -97,26 +65,21 @@
           </div>
         </div>
         
+        <!-- 操作栏 -->
         <div class="text-xs text-gray-400 mt-2 ml-2 flex">
-          <div class="mt-1">
-            {{ formatSessionTime(message.created_at || new Date().toISOString()) }}
-          </div>
-          
+          <div class="mt-1">{{ formatSessionTime(message.created_at || new Date().toISOString()) }}</div>
           <div class="flex-1"></div>
           <div class="flex gap-x-3 mr-2">
-            <TooltipProvider>
+             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger as-child>
                   <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
                     <MessageSquareShare :size="16"></MessageSquareShare>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>{{t('chat.share')}}</p>
-                </TooltipContent>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.share')}}</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
-
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger as-child>
@@ -124,28 +87,19 @@
                     <RotateCw :size="16"></RotateCw>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>{{t('chat.retry')}}</p>
-                </TooltipContent>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.retry')}}</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
-
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger as-child>
                   <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
                     <Transition name="icon-fade" mode="out-in">
-                        <component 
-                            :is="copySuccess ? Check : Copy" 
-                            :size="16"
-                            :key="copySuccess ? 'check-icon' : 'copy-icon'" 
-                        ></component>
+                        <component :is="copySuccess ? Check : Copy" :size="16" :key="copySuccess ? 'check-icon' : 'copy-icon'" ></component>
                     </Transition>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!">
-                  <p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p>
-                </TooltipContent>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p></TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
@@ -153,32 +107,96 @@
       </div>
     </div>
 
-    <!-- 用户消息 -->
+    <!-- ----------------------------------------------------------------------- -->
+    <!-- 👤 User 消息  -->
+    <!-- ----------------------------------------------------------------------- -->
     <div v-else class="flex items-start max-w-[70%] gap-3 flex-row-reverse">
-      <Avatar class="w-10 h-10">
-        <AvatarImage :src="userStore.avatar" alt="@unovue" />
+      <Avatar class="w-10 h-10 shrink-0">
+        <AvatarImage :src="userStore.avatar" alt="@user" />
         <AvatarFallback>{{ userStore.username[0] }}</AvatarFallback>
       </Avatar>
-      <div class="flex flex-col items-end">
-        <div class="bg-black text-white dark:bg-gray-500 rounded-2xl rounded-br-sm px-4 py-2 text-sm leading-relaxed shadow-sm">
+      
+      <div class="flex flex-col items-end gap-2">
+        
+        <!-- 多文件网格容器 (如果有多个文件) -->
+        <div v-if="allFiles.length > 0" class="flex flex-wrap justify-end gap-2 max-w-full">
+           <div 
+             v-for="(file, index) in allFiles"
+             :key="index"
+             @click.stop="handlePreview(file.file_url,file)"
+             class="group flex items-center gap-3 p-3 bg-white border border-gray-200 dark:bg-gray-800 dark:border-gray-700 rounded-2xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-750 transition-all shadow-sm"
+             style="width: fit-content;"
+           >
+            <!-- 图标/缩略图区域 -->
+            <div class="relative shrink-0 size-12 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-900 flex items-center justify-center border border-gray-200 dark:border-gray-700">
+              <img 
+                v-if="isImage(file)" 
+                :src="file.file_url" 
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+              <FileText v-else class="size-6 text-gray-500 dark:text-gray-400" />
+            </div>
+
+            <!-- 文件名区域 (如果有 id 为负数，说明是本地预览，可能没有 name，需要 fallback) -->
+            <div class="flex flex-col min-w-[100px] max-w-[200px] overflow-hidden">
+              <span class="truncate font-medium text-sm text-gray-900 dark:text-gray-100">
+                {{ getFileName(file) }}
+              </span>
+              <span class="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                {{ isImage(file) ? t('common.image') : t('common.file') }}
+              </span>
+            </div>
+           </div>
+        </div>
+
+        <!-- 独立文本气泡 -->
+        <div 
+          v-if="message.content" 
+          class="bg-black text-white dark:bg-gray-500 rounded-2xl rounded-br-sm px-4 py-2 text-sm leading-relaxed shadow-sm"
+        >
           <div v-html="message.content" class="rendered-content"></div>
         </div>
-        <div class="text-xs text-gray-400 mt-1 mr-2">
+        
+        <div class="text-xs text-gray-400 mr-2">
           {{ formatSessionTime(message.created_at || new Date().toISOString()) }}
         </div>
       </div>
     </div>
+
+    <!-- 全屏预览模态框 -->
+    <Teleport to="body">
+      <Transition name="fade">
+        <div 
+          v-if="previewImage" 
+          class="fixed inset-0 z-[9999] bg-black/90 backdrop-blur-sm flex items-center justify-center p-4 cursor-zoom-out"
+          @click="closePreview"
+        >
+          <div class="relative max-w-full max-h-full flex items-center justify-center" @click.stop>
+            <img 
+              :src="previewImage" 
+              class="max-w-full max-h-[90vh] object-contain rounded-lg shadow-2xl animate-zoom-in" 
+            />
+            <button 
+              class="absolute -top-12 right-0 text-white/70 hover:text-white p-2 transition-colors rounded-full hover:bg-white/10"
+              @click="closePreview"
+            >
+              <X class="size-8" />
+            </button>
+          </div>
+        </div>
+      </Transition>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { defineProps, computed, ref,  } from 'vue'
+import { defineProps, computed, ref } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
-import type { ChatMessage } from '@/api/chat/type'
-// import ShimmerAvatar from './ShimmerAvatar.vue';
-import { Copy, RotateCw, MessageSquareShare, Atom,ChevronRight,Check } from 'lucide-vue-next'
+import type { ChatMessage,MessageFile } from '@/api/chat/type'
+import { Copy, RotateCw, MessageSquareShare, Atom, ChevronRight, Check, FileText, X } from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,
@@ -197,69 +215,129 @@ const chatStore = useChatStore()
 const props = defineProps<{
   message: ChatMessage & { text?: string }
 }>()
-// 从 store 中响应式地获取 regeneratingMessageId
+
+// --------------------------------------------------------
+// 📂 文件相关逻辑
+// --------------------------------------------------------
+
+const previewImage = ref<string | null>(null)
+
+// 获取所有文件的列表 (兼容新旧字段)
+const allFiles = computed(() => {
+  const files: MessageFile[] = [];
+  
+  // 1. 优先使用新的多文件数组
+  if (props.message.files && props.message.files.length > 0) {
+    return props.message.files;
+  } 
+  // 2. 兼容旧的单文件字段
+  else if (props.message.file_url) {
+    files.push({ 
+      id: props.message.id, 
+      file_url: props.message.file_url 
+    });
+  }
+  
+  return files;
+})
+
+
+// 判断是否为图片
+const isImage = (file: MessageFile) => {
+  // 如果有明确的 type 字段（乐观更新时有），直接用 type 判断
+  if (file.file_type) {
+    return file.file_type.startsWith('image/');
+  }
+
+  // 如果是后端返回的数据，通常 file_url 有明确的后缀
+  const url = file.file_url;
+  if (!url) return false
+  
+  return /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(url) || url.startsWith('data:image');
+}
+
+// 获取文件名
+const getFileName = (file: MessageFile) => {
+  // 1. 优先使用乐观更新传过来的文件名
+  if (file.file_name) return file.file_name;
+
+  const url = file.file_url;
+  if (!url) return t('common.unknownFile');
+  if (url.startsWith('blob:')) return 'Uploaded File'; // 只有在 type 和 name 都缺失的极端情况下才会走到这
+  
+  try {
+    const name = url.split('/').pop() || t('common.file');
+    return decodeURIComponent(name);
+  } catch (e) {
+    return t('common.file');
+  }
+}
+
+// 处理预览点击
+const handlePreview = (url: string | null, file?: MessageFile) => {
+  if (!url) return;
+  
+  // 预览时也使用更准确的判断
+  const isImg = file ? isImage(file) : /\.(jpg|jpeg|png|gif|webp|bmp)$/i.test(url);
+
+  if (isImg) {
+    previewImage.value = url;
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
+const closePreview = () => {
+  previewImage.value = null;
+}
+
+// --------------------------------------------------------
+// 🤖  AI 消息逻辑
+// --------------------------------------------------------
+
 const { regeneratingMessageId } = storeToRefs(chatStore)
-// 创建一个计算属性，判断 *当前* 消息是否正在被重试
 const isCurrentlyRegenerating = computed(() => {
   return regeneratingMessageId.value === props.message.id
 })
-// 定时器引用
 const copyTimer = ref<number | null>(null)
 const copySuccess = ref<boolean>(false)
-
-//   推理过程展开状态 - 默认折叠
 const isReasoningExpanded = ref(false)
 
-//   判断是否完全没有内容（既没有推理也没有回答）
 const isCompletelyEmpty = computed(() => {
   const hasReasoning = props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
   const hasContent = props.message.content && props.message.content.trim() !== ''
-  // 如果正在重试，也不算 "完全为空"（它会显示 "正在输入..."）
   if (isCurrentlyRegenerating.value) {
     return !hasReasoning && !hasContent
   }
   return props.message.sender === 'ai' && !hasReasoning && !hasContent
 })
 
-//   是否有推理内容
 const hasReasoningContent = computed(() => {
   return props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
 })
 
-//   是否有回答内容
 const hasAnswerContent = computed(() => {
   return props.message.content && props.message.content.trim() !== ''
 })
 
-//   推理过程是否正在流式输出
-// 判断依据：有推理内容，但最终消息还没收到（id 为临时负数）
 const isReasoningStreaming = computed(() => {
-  // 满足任一条件即可：(是新消息) 或 (正在被重试)
   const isStreaming = (props.message.id < 0) || isCurrentlyRegenerating.value
-  
   return isStreaming && hasReasoningContent.value && !hasAnswerContent.value
 })
 
-//   回答是否正在流式输出
 const isAnswerStreaming = computed(() => {
   const isStreaming = (props.message.id < 0) || isCurrentlyRegenerating.value
-  
   return isStreaming && hasAnswerContent.value
 })
 
-//   推理内容字符数
 const reasoningCharCount = computed(() => {
   return props.message.reasoning_content?.length || 0
 })
 
-//   切换推理过程展开/折叠
 const toggleReasoning = () => {
   isReasoningExpanded.value = !isReasoningExpanded.value
 }
 
-/**
- * ⚡ 动作处理函数
- */
 const handleAction = async (actionType: 'share' | 'retry' | 'copy') => {
   switch (actionType) {
     case 'share':
@@ -278,60 +356,40 @@ const handleAction = async (actionType: 'share' | 'retry' | 'copy') => {
 
 const handleShare = () => {
   const shareText = `${t('chat.sharePrefix')}: ${props.message.content}`;
-  
   if (navigator.share) {
     navigator.share({
       title: t('chat.shareTitle'),
       text: shareText,
       url: window.location.href
-    })
-    .then(() => {
-      console.log(t('chat.shareSuccess'));
-    })
-    .catch((error) => {
-      console.error(t('chat.shareFaild'), error);
-    });
+    }).catch((error) => console.error(t('chat.shareFaild'), error));
   } else {
-    console.log(t('chat.browserNotSupportShare'));
     handleCopy();
   }
 }
 
 const handleRetry = () => {
-  // 假设你也能拿到当前选择的 model
   const currentModel = GET_MODEL() || 'deepseek-chat'; 
-  
-  // 核心调用
   chatStore.regenerateMessage(props.message.id, currentModel);
 }
 
 const handleCopy = async () => {
   let contentToCopy = props.message.content || '';
-  
-  // 如果有推理过程，可以选择一起复制
   if (props.message.reasoning_content) {
     contentToCopy = `[${t('chat.thinkingProcess')}]\n${props.message.reasoning_content}\n\n[${t('chat.answer')}]\n${contentToCopy}`;
   }
-
-  if (!contentToCopy) {
-    return;
-  }
+  if (!contentToCopy) return;
 
   try {
     await navigator.clipboard.writeText(contentToCopy);
-    // 清除之前的计时器，避免多次点击造成抖动
     if (copyTimer.value) {
       clearTimeout(copyTimer.value)
       copyTimer.value = null
     }
-    // 立刻显示 Check 图标
     copySuccess.value = true
-    // 1.5 秒后恢复成 Copy 图标
     copyTimer.value = window.setTimeout(() => {
       copySuccess.value = false
       copyTimer.value = null
     }, 1500)
-    
   } catch (err) {
     console.error(t('chat.copyFailed'), err);
   }
@@ -339,6 +397,32 @@ const handleCopy = async () => {
 </script>
 
 <style scoped>
+/* 预览淡入淡出 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 缩放动画 */
+@keyframes zoomIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-zoom-in {
+  animation: zoomIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
 /* copy图标与check图标切换动画 */
 .icon-fade-enter-from,
@@ -448,26 +532,6 @@ const handleCopy = async () => {
 
 .reasoning-content::-webkit-scrollbar-thumb:hover {
   background: #dcdcdc
-}
-
-/* 光标闪烁动画 */
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.3;
-  }
-}
-
-/* 弹跳动画 */
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
 }
 
 /* 深色模式优化 */

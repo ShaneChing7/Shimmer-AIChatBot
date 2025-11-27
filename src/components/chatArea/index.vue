@@ -1,5 +1,6 @@
 <template>
   <div class="flex flex-col flex-1 min-w-0 h-full z-0">
+    <!-- Header  -->
     <div class="flex border-b border-border h-16 items-center pl-5 flex-none">
       <div class="flex items-center gap-3">
         <div class="size-10 rounded-full bg-primary flex items-center justify-center shimmer-effect glow-effect">
@@ -13,6 +14,7 @@
     </div>
 
     <div class="flex-1 min-h-0 relative px-2 space-y-1 overflow-hidden">
+      <!-- 消息列表 -->
       <transition name="fade-slide" mode="out-in">
         <div v-if="currentMessages.length > 0" key="chat" class="flex flex-col h-full items-center">
           <div class="h-full  pb-32 p-3 pt-0 w-full max-w-[1000px] mx-auto"
@@ -33,6 +35,7 @@
         </div>
       </transition>
 
+      <!-- 输入框区域 -->
       <div 
         class="  absolute left-0 right-0 flex justify-center px-4 transition-all duration-500 ease-in-out"
         :style="{
@@ -60,6 +63,40 @@
             height: 'auto'
           }"
         >
+          
+          <!-- 多文件预览区域  -->
+          <transition name="fade-scale">
+            <div v-if="selectedFiles.length > 0" class="file-preview px-3 pt-3 pb-0.5 flex gap-2 overflow-x-auto scrollbar-thin">
+               <div 
+                  v-for="(file, index) in selectedFiles" 
+                  :key="index"
+                  class="relative group shrink-0 bg-muted/50 rounded-xl p-2 pr-4 flex items-center gap-3 border border-border/50 shadow-sm w-48"
+                >
+                  <!-- 图片预览 -->
+                  <div v-if="file.type.startsWith('image/')" class="relative size-10 rounded-lg overflow-hidden border border-border bg-background">
+                    <img :src="getPreviewUrl(file)" class="w-full h-full object-cover" />
+                  </div>
+                  <!-- 文件图标预览 -->
+                  <div v-else class="size-10 flex items-center justify-center bg-background rounded-lg border border-border text-muted-foreground">
+                    <FileText class="size-6" />
+                  </div>
+                  
+                  <div class="flex flex-col min-w-0">
+                     <span class="text-xs truncate font-medium text-foreground/80 w-full block">{{ file.name }}</span>
+                     <span class="text-[10px] text-muted-foreground">{{ formatFileSize(file.size) }}</span>
+                  </div>
+      
+                  <!-- 移除按钮 -->
+                  <button 
+                    @click.stop="removeFile(index)" 
+                    class="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-md hover:scale-110 z-10"
+                  >
+                     <X class="size-3" />
+                  </button>
+               </div>
+            </div>
+          </transition>
+
           <div class="flex-1 min-h-0 flex items-start px-4 pt-4 relative">
             <textarea
               ref="textareaRef"
@@ -87,11 +124,26 @@
 
           <div class="flex h-[55px] w-full items-center px-4 shrink-0">
             
+            <!-- 绑定点击事件触发文件选择 -->
             <div
-              class="mr-1 size-10 rounded-full hover:bg-muted transition-colors duration-75 flex items-center justify-center shrink-0">
+              @click="triggerFileInput"
+              class="mr-1 size-10 rounded-full hover:bg-muted transition-colors duration-75 flex items-center justify-center shrink-0 cursor-pointer"
+              title="上传文件/图片"
+            >
               <Plus class="size-6 text-stone-600" />
             </div>
 
+            <!-- 隐藏的文件输入框 -->
+            <input 
+              type="file" 
+              ref="fileInputRef" 
+              class="hidden" 
+              @change="handleFileSelect" 
+              accept="image/*,.pdf,.txt,.md" 
+              multiple
+            />
+
+            <!-- Model Selector  -->
             <div class="relative">
               <div 
                 class="cursor-pointer rounded-2xl px-2 py-2 h-3/5 bg-gray-50 dark:bg-gray-700 
@@ -152,7 +204,7 @@
 
 <script setup lang="ts">
 import ShimmerAvatar from './ShimmerAvatar.vue';
-import {  Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft } from 'lucide-vue-next'
+import { Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft, FileText, X } from 'lucide-vue-next'
 import { ref, watch, computed, onUnmounted, nextTick } from 'vue'
 import MessageList from './MessageList.vue'
 import { toast } from 'vue-sonner';
@@ -185,6 +237,12 @@ const input = ref('')
 const textareaRef = ref<HTMLTextAreaElement | null>(null);
 const inputBoxRef = ref<HTMLElement | null>(null);
 const isExpanded = ref(false);
+
+// 多文件状态
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const selectedFiles = ref<File[]>([]);
+const previewUrls = ref<Map<string, string>>(new Map()); // 使用 Map 存储临时 URL
+
 
 // 计算行数
 const lineCount = computed(() => {
@@ -233,6 +291,63 @@ const handleKeydown = (e: KeyboardEvent) => {
   }
 };
 
+// 触发文件选择
+const triggerFileInput = () => {
+  fileInputRef.value?.click();
+};
+
+// 处理多文件选择
+const handleFileSelect = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (target.files) {
+    const newFiles = Array.from(target.files);
+    // 限制总数量或大小 (可选)
+    newFiles.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) {
+            toast.warning(`文件 ${file.name} 超过 10MB`);
+            return;
+        }
+        selectedFiles.value.push(file);
+        // 生成预览 URL
+        if (file.type.startsWith('image/')) {
+            previewUrls.value.set(file.name, URL.createObjectURL(file));
+        }
+    });
+    // 清空 input 允许重复选择相同文件
+    target.value = '';
+    nextTick(() => textareaRef.value?.focus());
+  }
+};
+
+const getPreviewUrl = (file: File) => previewUrls.value.get(file.name) || '';
+
+// 移除单个文件
+const removeFile = (index: number) => {
+  const file = selectedFiles.value[index];
+  if (file && previewUrls.value.has(file.name)) {
+    URL.revokeObjectURL(previewUrls.value.get(file.name)!);
+    previewUrls.value.delete(file.name);
+  }
+  selectedFiles.value.splice(index, 1);
+};
+
+
+const clearFiles = () => {
+  selectedFiles.value.forEach(f => {
+    if (previewUrls.value.has(f.name)) URL.revokeObjectURL(previewUrls.value.get(f.name)!);
+  });
+  selectedFiles.value = [];
+  previewUrls.value.clear();
+};
+
+// 格式化文件大小
+const formatFileSize = (bytes: number) => {
+  if (bytes === 0) return '0 B';
+  const k = 1024;
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
+};
+
 // sendMessage 函数
 const sendMessage = async () => {
   if (loading.value) {
@@ -247,7 +362,7 @@ const sendMessage = async () => {
     return;
   }
   
-  if (!messageContent) return
+ if (!messageContent && selectedFiles.value.length === 0) return
 
   if (!chatStore.currentSession?.id) {
     const created = await chatStore.createSession(t("session.newSessionTitle"));
@@ -257,7 +372,11 @@ const sendMessage = async () => {
     }
   }
   
+  // 复制当前文件列表进行发送
+  const filesToSend = [...selectedFiles.value];
+  
   input.value = ''
+  clearFiles(); // 发送后清空文件预览
   
   // 发送后重置 textarea 高度
   nextTick(() => {
@@ -265,7 +384,8 @@ const sendMessage = async () => {
   });
 
   try {
-    await chatStore.sendMessage(messageContent, selectedModel.value);
+    // 传递数组
+    await chatStore.sendMessage(messageContent, selectedModel.value, filesToSend);
   } catch (error) {
     toast.error(chatStore.error || t('chat.messageSendFailed'));
   }
@@ -317,6 +437,8 @@ const toggleExpand = () => {
 // 在组件卸载时移除监听器
 onUnmounted(() => {
   document.removeEventListener('mousedown', handleClickOutside);
+  // 清理内存
+  clearFiles();
 });
 
 </script>
@@ -410,6 +532,8 @@ onUnmounted(() => {
   }
 }
 
+
+/* 输入框滚动条样式 */
 .textarea-content::-webkit-scrollbar {
   width: 5px;
 }
@@ -437,3 +561,4 @@ onUnmounted(() => {
   flex-grow: 1;
 }
 </style>
+

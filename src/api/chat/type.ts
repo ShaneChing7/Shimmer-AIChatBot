@@ -6,7 +6,7 @@ export interface ResponseData<T = any> {
   data?: T
 }
 
-// -------------------- 通用分页类型 (新增) --------------------
+// -------------------- 通用分页类型  --------------------
 // DRF 分页的默认结构
 export interface PaginationData<T> {
   count: number
@@ -17,10 +17,20 @@ export interface PaginationData<T> {
 
 // -------------------- Chat (聊天) --------------------
 
-// 2. 消息接口类型 
+// 消息接口类型 
 
 // 消息发送者角色
 export type MessageSender = 'user' | 'ai'
+
+// 附件类型
+export interface MessageFile {
+  id: number;
+  file_url: string;
+  parsed_content?: string;
+  // 可选字段，用于前端乐观更新时的正确显示
+  file_name?: string; 
+  file_type?: string; 
+}
 
 // 单条消息结构 (与后端 ChatMessageSerializer 匹配)
 export interface ChatMessage {
@@ -28,12 +38,17 @@ export interface ChatMessage {
   session: number // 会话 ID
   sender: MessageSender
   content: string // 消息内容 (可能是 Markdown 格式)
-  content_type: 'text' | 'markdown' | 'image_url' // 匹配后端 ContentTypeChoices
+  content_type: 'text' | 'markdown' | 'image_url' | 'file' 
   created_at: string // 创建时间
   reasoning_content?: string;  // DeepSeek Reasoner 的推理过程
+
+  // 支持多文件 (兼容旧的单文件 file_url)
+  files?: MessageFile[] 
+  file_url?: string | null 
+  parsed_content?: string | null
 }
 
-// 1. 会话列表接口类型
+// 会话列表接口类型
 
 // 单个会话基础结构 (用于列表，与后端 ChatSessionListSerializer 匹配)
 export interface ChatSession {
@@ -52,30 +67,31 @@ export interface ChatSessionDetailData extends ChatSession {
 export type ChatSessionDetailResponseData = ResponseData<ChatSessionDetailData>
 
 
-// ✅ 修改 1: 会话列表接口返回数据
+// 会话列表接口返回数据
 // data 是 PaginationData<ChatSession>，包含分页信息和 results 数组
 export type ChatSessionListResponseData = ResponseData<ChatSession[]>
 
 
-// 3. 创建会话请求和返回类型
+// 创建会话请求和返回类型
 
 // 创建会话请求体 (只需要标题)
 export interface ChatSessionCreateData {
   title: string
 }
 
-// ✅ 修改 2: 创建会话接口返回数据 (返回完整的会话详情，包含第一条消息)
+// 会话接口返回数据 (返回完整的会话详情，包含第一条消息)
 export type ChatSessionCreateResponseData = ChatSessionDetailResponseData // 直接使用 ChatSessionDetailData
 
-// 4. 发送消息请求和返回类型
+// 发送消息请求和返回类型
 
-// 发送消息请求体
+// 发送消息请求体现在可能包含文件
+// 在实际发送 FormData 时，TypeScript 接口主要用于类型提示，FormData 构建需手动处理
 export interface ChatMessageCreateData {
-  content: string // 用户发送的消息内容
-  content_type?: 'text' // 后端默认是 'text'
+  content?: string // 内容变为可选，因为可能只传文件
+  content_type?: 'text' | 'file'
+  files?: File[] // 支持多文件
+  model?: string
 }
 
 // 发送消息接口返回数据 (后端返回的是 AI 的回复消息)
 export type ChatMessageCreateResponseData = ResponseData<ChatMessage>
-
-// ... (保留其他用户认证相关的类型定义)

@@ -13,15 +13,18 @@ import type {
   ChatSession,
   ChatSessionDetailData,
   ChatMessage,
+  MessageFile,
 } from "@/api/chat/type";
 
 interface ChatState {
   sessions: ChatSession[] | null;
-  currentSession: ChatSessionDetailData | null;
+  currentSession: ChatSessionDetailData | null; // 当前 UI 展示的会话
   selectedSessionId: number | null;
-  loading: boolean;
+  loading: boolean; // 仅表示列表加载等全局 loading
   error: string | null;
+  
   regeneratingMessageId: number | null;
+  
 }
 
 export const useChatStore = defineStore("chat", {
@@ -117,7 +120,13 @@ export const useChatStore = defineStore("chat", {
       }
     },
 
-    async sendMessage(content: string, model: string = 'deepseek-chat') {
+    /**
+     * 发送消息 (支持文件上传)
+     * @param content 文本内容
+     * @param model 模型名称
+     * @param files 文件数组
+     */
+    async sendMessage(content: string, model: string = 'deepseek-chat', files?: File[]) {
       if (!this.currentSession?.id) {
         this.error = "请先选择或创建一个会话。";
         return;
@@ -125,18 +134,32 @@ export const useChatStore = defineStore("chat", {
 
       const sessionId = this.currentSession.id;
 
-      // 1. 添加用户消息
+      // 添加用户消息到界面
+      //乐观更新: 构造临时文件对象用于显示
+      const tempFiles: MessageFile[] = [];
+      if (files && files.length > 0) {
+        files.forEach((f, index) => {
+          tempFiles.push({
+            id: -1 - index, // 临时 ID
+            file_url: URL.createObjectURL(f),
+            file_name: f.name, // 保存文件名
+            file_type: f.type  // 保存文件类型 (例如 'image/png', 'application/pdf')
+          });
+        });
+      }
+      
       const userMessage: ChatMessage = {
         id: Date.now() * -1,
         session: sessionId,
         sender: "user",
         content: content,
-        content_type: "text",
+        content_type: (files && files.length > 0) ? "file" : "text",
+        files: tempFiles, // 使用 files 数组
         created_at: new Date().toISOString(),
       };
       this.currentSession.messages.push(userMessage);
 
-      // 2. 创建 AI 消息占位符
+      // 创建 AI 消息占位符
       const tempId = (Date.now() * -1) - 1;
       const aiMessagePlaceholder: ChatMessage = {
         id: tempId,
@@ -149,25 +172,38 @@ export const useChatStore = defineStore("chat", {
       };
       this.currentSession.messages.push(aiMessagePlaceholder);
 
-      // 3. 调用流式 API
       this.loading = true;
       this.error = null;
 
+      // 调用流式 API
       try {
         const apiUrl = `/api/sessions/${sessionId}/messages-stream/`;
-        const headers: HeadersInit = {
-          "Content-Type": "application/json",
-        };
+        // 构建 FormData 
+        // 使用 FormData，以支持文件传输
+        const formData = new FormData();
+        formData.append('model', model);
 
+        // 即使 content 为空字符串也传过去，后端做了 .get('content') 处理
+        formData.append('content', content);
+
+        // 循环追加文件
+        if (files && files.length > 0) {
+          files.forEach(file => {
+            formData.append('files', file); // 后端使用 request.FILES.getlist('files')
+          });
+        }
+
+        const headers: HeadersInit = {};
         const token = localStorage.getItem('TOKEN');
         if (token) {
           headers["Authorization"] = `Bearer ${token}`;
         }
-
+        // 使用 FormData 时，不要手动设置 Content-Type 为 application/json 或 multipart/form-data
+        // 浏览器会自动设置正确的 Content-Type 和 boundary
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: headers,
-          body: JSON.stringify({ content, model }),
+          body: formData, // 直接传递 formData
         });
 
         if (!response.ok || !response.body) {
@@ -175,7 +211,7 @@ export const useChatStore = defineStore("chat", {
           throw new Error(`网络错误: ${response.status} ${errorText}`);
         }
 
-        // 4. 处理流式响应
+        //处理流式响应
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
@@ -199,40 +235,38 @@ export const useChatStore = defineStore("chat", {
 
               try {
                 const data = JSON.parse(dataStr);
+                const aiMsgIndex = this.currentSession!.messages.findIndex(m => m.id === tempId);
 
                 if (data.event === 'done' && data.message) {
-                  // 流结束,用完整消息替换占位符
+                  // 替换 AI 消息
                   const finalMessage: ChatMessage = {
                     ...data.message,
                     reasoning_content: data.reasoning || ""  //   保存完整推理过程，使用 reasoning_content
                   };
-                  const index = this.currentSession!.messages.findIndex(
-                    m => m.id === tempId
-                  );
-                  if (index !== -1) {
-                    this.currentSession!.messages.splice(index, 1, finalMessage);
+                  
+                  if (aiMsgIndex !== -1) {
+                    this.currentSession!.messages.splice(aiMsgIndex, 1, finalMessage);
                   }
+                  // 更新用户消息（为了获得真实的文件 URL 和 ID）
+                  // 这里后端一般不返回用户消息，但如果需要精确状态，可以重新 fetch
+                  // 简单处理：保留乐观更新的 URL，或者你可以让后端在 done 事件里也返回用户消息的更新
                 } else if (data.event === 'error') {
                   throw new Error(`AI 错误: ${data.detail}`);
                 } else if (data.type === 'reasoning') {
-                  //   收到推理内容块
-                  const index = this.currentSession!.messages.findIndex(
-                    m => m.id === tempId
-                  );
-                  if (index !== -1 && this.currentSession?.messages[index]) {
-                    if (!this.currentSession.messages[index].reasoning_content) {
-                      this.currentSession.messages[index].reasoning_content = "";
-                    }
-                    this.currentSession.messages[index].reasoning_content += data.content;
-                  }
+                  if (aiMsgIndex !== -1) {
+                     const msg = this.currentSession!.messages[aiMsgIndex];
+                     if (msg) {
+                       if (!msg.reasoning_content) msg.reasoning_content = "";
+                       msg.reasoning_content += data.content;
+                     }
+                   }
                 } else if (data.type === 'content') {
                   //   收到正常内容块
-                  const index = this.currentSession!.messages.findIndex(
-                    m => m.id === tempId
-                  );
-                  if (index !== -1 && this.currentSession?.messages[index]) {
-                    this.currentSession.messages[index].content += data.content;
-                  }
+                  if (aiMsgIndex !== -1) {
+                     if (this.currentSession && this.currentSession.messages[aiMsgIndex]) {
+                       this.currentSession.messages[aiMsgIndex].content += data.content;
+                     }
+                   }
                 }
               } catch (e) {
                 console.warn("无法解析的 SSE data:", dataStr, e);
@@ -251,6 +285,10 @@ export const useChatStore = defineStore("chat", {
         }
       } finally {
         this.loading = false;
+        // 释放临时 URL
+        if (tempFiles.length > 0) {
+            tempFiles.forEach(f => URL.revokeObjectURL(f.file_url));
+        }
       }
     },
     
@@ -262,7 +300,7 @@ export const useChatStore = defineStore("chat", {
 
       const sessionId = this.currentSession.id;
 
-      // 1. 找到要重新生成的消息
+      // 找到要重新生成的消息
       const messageIndex = this.currentSession.messages.findIndex(
         (m) => m.id === messageId
       );
@@ -279,17 +317,17 @@ export const useChatStore = defineStore("chat", {
         return;
       }
 
-      // 2. ⚡️ 关键: 清空现有消息的内容，准备接收新流
+      // 清空现有消息的内容，准备接收新流
       messageToRegenerate.content = "";
       messageToRegenerate.reasoning_content = "";
 
-      // 3. 调用流式 API
+      // 调用流式 API
       this.loading = true;
       this.regeneratingMessageId = messageId;
       this.error = null;
 
       try {
-        // 🎯 更改 API URL
+        //  更改 API URL
         const apiUrl = `/api/sessions/${sessionId}/regenerate/`;
         const headers: HeadersInit = {
           "Content-Type": "application/json",
@@ -303,7 +341,7 @@ export const useChatStore = defineStore("chat", {
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: headers,
-          // 🎯 更改 Body
+          // 更改 Body
           body: JSON.stringify({ message_id: messageId, model }),
         });
 
@@ -312,7 +350,7 @@ export const useChatStore = defineStore("chat", {
           throw new Error(`网络错误: ${response.status} ${errorText}`);
         }
 
-        // 4. 处理流式响应 (与 sendMessage 逻辑相同)
+        // 处理流式响应 (与 sendMessage 逻辑相同)
         const reader = response.body.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
@@ -335,7 +373,7 @@ export const useChatStore = defineStore("chat", {
               try {
                 const data = JSON.parse(dataStr);
 
-                // 🎯 关键: 查找消息使用 messageId 而不是 tempId
+                // 查找消息使用 messageId 而不是 tempId
                 const index = this.currentSession!.messages.findIndex(
                   m => m.id === messageId
                 );
@@ -376,7 +414,7 @@ export const useChatStore = defineStore("chat", {
 
       } catch (err: any) {
         this.error = err.message || "网络请求错误";
-        // 🎯 更新失败状态到 *原始* 消息
+        // 更新失败状态到 *原始* 消息
         const index = this.currentSession!.messages.findIndex(
           m => m.id === messageId
         );
