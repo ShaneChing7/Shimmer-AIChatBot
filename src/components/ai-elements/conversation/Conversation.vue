@@ -57,7 +57,7 @@ const props = withDefaults(defineProps<Props>(), {
   transition: background-color 0.25s ease;
 }
 
-/* ✅ 当鼠标悬停在滚动条滑块上时变红 */
+/*  当鼠标悬停在滚动条滑块上时变红 */
 .conversation-scroll-area ::-webkit-scrollbar-thumb:hover {
   background-color: #dcdcdc;
 }

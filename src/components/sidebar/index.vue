@@ -23,7 +23,7 @@
       </div>
     </div>
 
-    <!-- ✅ 自定义虚拟滚动列表 -->
+    <!--  自定义虚拟滚动列表 -->
     <div class="pl-2 flex-1 overflow-hidden relative">
       <!-- 顶部遮罩 -->
       <div v-show="showTopShadow && isExpanded" 
@@ -167,14 +167,14 @@ const sessionToDelete = ref<number | null>(null);
 const showDeleteDialog = ref(false);
 const isExpanded = ref(true);
 
-// ✅ 虚拟滚动相关状态
+//  虚拟滚动相关状态
 const scrollContainer = ref<HTMLElement | null>(null);
 const ITEM_HEIGHT = 54; // 每个 Session 的高度
 const BUFFER_SIZE = 3;  // 上下缓冲项数
 
 const scrollTop = ref(0);
 const containerHeight = ref(0);
-// ✅ 新增: 保存折叠前的滚动位置
+//  新增: 保存折叠前的滚动位置
 const savedScrollTop = ref(0);
 
 // 计算可见范围
@@ -202,7 +202,7 @@ const offsetBottom = computed(() => {
   return (sessions.value.length - visibleRange.value.end) * ITEM_HEIGHT;
 });
 
-// ✅ 新增: 滚动到指定 Session
+//  新增: 滚动到指定 Session
 const scrollToSession = (sessionId: number) => {
   const index = sessions.value.findIndex(s => s.id === sessionId);
   if (index === -1 || !scrollContainer.value) return;
@@ -214,7 +214,7 @@ const scrollToSession = (sessionId: number) => {
   scrollTop.value = targetScrollTop;
 }
 
-// ✅ 新增: 恢复滚动位置
+//  新增: 恢复滚动位置
 const restoreScrollPosition = () => {
   if (!scrollContainer.value) return;
   
@@ -233,7 +233,7 @@ const restoreScrollPosition = () => {
 }
 
 const toggleSidebar = (value: boolean) => {
-  // ✅ 折叠前保存滚动位置
+  //  折叠前保存滚动位置
   if (!value && scrollContainer.value) {
     savedScrollTop.value = scrollContainer.value.scrollTop;
   }
@@ -241,7 +241,7 @@ const toggleSidebar = (value: boolean) => {
   isExpanded.value = value;
 };
 
-// ✅ 处理滚动事件
+//  处理滚动事件
 const handleScroll = (event: Event) => {
   const target = event.target as HTMLElement;
   if (!target) return;
@@ -259,7 +259,7 @@ const handleScroll = (event: Event) => {
   showBottomShadow.value = scrollTop.value + clientHeight < scrollHeight - 10;
 }
 
-// ✅ 监听展开状态,恢复滚动位置
+//  监听展开状态,恢复滚动位置
 watch([isExpanded, scrollContainer], async ([expanded, container]) => {
   if (expanded && container) {
     await nextTick();
@@ -278,7 +278,7 @@ watch([isExpanded, scrollContainer], async ([expanded, container]) => {
   }
 }, { immediate: true });
 
-// ✅ 监听当前选中的 Session 变化,自动滚动
+//  监听当前选中的 Session 变化,自动滚动
 watch(() => chatStore.currentSession?.id, async (newSessionId, oldSessionId) => {
   // 只在选中不同 Session 且 sidebar 展开时才滚动
   if (newSessionId && newSessionId !== oldSessionId && isExpanded.value && scrollContainer.value) {
@@ -287,7 +287,7 @@ watch(() => chatStore.currentSession?.id, async (newSessionId, oldSessionId) => 
   }
 });
 
-// ✅ 监听 sessions 数据加载
+//  监听 sessions 数据加载
 watch(() => sessions.value.length, async (newLength) => {
   if (newLength > 0 && isExpanded.value && scrollContainer.value) {
     await nextTick();
@@ -305,13 +305,9 @@ const selectSession = async (sessionId: number) => {
     return;
   }
 
-  const success = await chatStore.fetchSessionDetail(sessionId);
+  await chatStore.fetchSessionDetail(sessionId);
 
-  if (!success) {
-    toast.error(t('toast.loadFailedTitle'), {
-      description: chatStore.error || t('toast.loadSessionFailed'),
-    })
-  }
+  
   // 注意: 滚动由 watch(currentSession) 自动处理
 }
 
@@ -347,10 +343,10 @@ const handleConfirmDelete = async () => {
 
     if (success) {
       toast.success(t('toast.deleteSuccess'));
-    } else {
-      toast.error(t('toast.deleteFailedTitle'), {
-        description: chatStore.error || t('toast.deleteFailedDesc'),
-      });
+    // } else {
+    //   toast.error(t('toast.deleteFailedTitle'), {
+    //     description: chatStore.error || t('toast.deleteFailedDesc'),
+    //   });
     }
   } catch (error) {
     toast.error(t('toast.deleteOperationFailedTitle'), {
@@ -412,7 +408,7 @@ onMounted(() => {
   background: rgba(255, 255, 255, 0.3);
 }
 
-/* ✅ 平滑滚动 */
+/*  平滑滚动 */
 .overflow-y-auto {
   scroll-behavior: smooth;
 }

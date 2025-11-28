@@ -56,6 +56,7 @@ request.interceptors.response.use(
                   router.push('/');
                 });
 				chatStore.clearChatState()
+				toast.error(message)
 				break;
 			case 403:
 				message = '无权访问'

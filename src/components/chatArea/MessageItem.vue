@@ -67,42 +67,76 @@
         
         <!-- 操作栏 -->
         <div class="text-xs text-gray-400 mt-2 ml-2 flex">
-          <div class="mt-1">{{ formatSessionTime(message.created_at || new Date().toISOString()) }}</div>
+          <Transition name="fade">
+            <div v-if="!isStreaming" class="mt-1">
+              {{ formatSessionTime(message.created_at || new Date().toISOString()) }}
+            </div>
+          </Transition>
           <div class="flex-1"></div>
-          <div class="flex gap-x-3 mr-2">
-             <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
-                    <MessageSquareShare :size="16"></MessageSquareShare>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.share')}}</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('retry')">
-                    <RotateCw :size="16"></RotateCw>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.retry')}}</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger as-child>
-                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
-                    <Transition name="icon-fade" mode="out-in">
-                        <component :is="copySuccess ? Check : Copy" :size="16" :key="copySuccess ? 'check-icon' : 'copy-icon'" ></component>
-                    </Transition>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p></TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
+            <!--  修复 Issue 3: 仅当是最后一条 AI 消息 且 未在生成 且 状态不是 completed 时才显示继续 -->
+            <TransitionGroup 
+            name="fade" 
+            tag="div" 
+            class="flex gap-x-3 mr-2"
+            >
+            <div 
+              v-if="isLastAiMessage && !isStreaming && message.status !== 'completed'"
+              :key="'play'"
+              class="flex items-center" 
+            >
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('continue')">
+                      <Play :size="16" class="fill-current"></Play>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.continue')}}</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            <div v-if="!isStreaming" :key="'share'" class="flex items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
+                      <MessageSquareShare :size="16"></MessageSquareShare>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.share')}}</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            
+            <div v-if="!isStreaming" :key="'retry'" class="flex items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('retry')">
+                      <RotateCw :size="16"></RotateCw>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.retry')}}</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+
+            <div v-if="!isStreaming" :key="'copy'" class="flex items-center">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger as-child>
+                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
+                      <Transition name="icon-fade" mode="out-in">
+                          <component :is="copySuccess ? Check : Copy" :size="16" :key="copySuccess ? 'check-icon' : 'copy-icon'" ></component>
+                      </Transition>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </TransitionGroup>
         </div>
       </div>
     </div>
@@ -196,7 +230,7 @@ import { defineProps, computed, ref } from 'vue'
 import useUserStore from '@/store/modules/user'
 import { formatSessionTime } from '@/utils/time'
 import type { ChatMessage,MessageFile } from '@/api/chat/type'
-import { Copy, RotateCw, MessageSquareShare, Atom, ChevronRight, Check, FileText, X } from 'lucide-vue-next'
+import { Copy, RotateCw, MessageSquareShare, Atom, ChevronRight, Check, FileText, X,Play } from 'lucide-vue-next'
 import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,
@@ -295,9 +329,27 @@ const closePreview = () => {
 // 🤖  AI 消息逻辑
 // --------------------------------------------------------
 
+// AI 逻辑
 const { regeneratingMessageId } = storeToRefs(chatStore)
-const isCurrentlyRegenerating = computed(() => {
-  return regeneratingMessageId.value === props.message.id
+
+// 判断是否正在流式传输 (包括普通生成和重新生成)
+// 注意：现在 chatStore.isGenerating(sessionId) 是更准确的判断，但这里我们只能拿到 messageId
+// 结合 chatStore 状态来判断
+const isStreaming = computed(() => {
+    // 1. 如果是临时消息 (id < 0) 且当前会话正在生成，视为 streaming
+    const sessionGenerating = chatStore.isGenerating(props.message.session);
+    if (props.message.id < 0 && sessionGenerating) return true;
+    // 2. 如果是正在重新生成的消息
+    if (regeneratingMessageId.value === props.message.id) return true;
+    return false;
+})
+
+// 判断是否是最后一条 AI 消息 (用于显示 Continue 按钮)
+const isLastAiMessage = computed(() => {
+    if (props.message.sender !== 'ai') return false;
+    const currentMsgs = chatStore.currentMessages;
+    if (currentMsgs.length === 0) return false;
+    return currentMsgs[currentMsgs.length - 1]?.id === props.message.id;
 })
 const copyTimer = ref<number | null>(null)
 const copySuccess = ref<boolean>(false)
@@ -306,7 +358,7 @@ const isReasoningExpanded = ref(false)
 const isCompletelyEmpty = computed(() => {
   const hasReasoning = props.message.reasoning_content && props.message.reasoning_content.trim() !== ''
   const hasContent = props.message.content && props.message.content.trim() !== ''
-  if (isCurrentlyRegenerating.value) {
+  if (isStreaming.value) {
     return !hasReasoning && !hasContent
   }
   return props.message.sender === 'ai' && !hasReasoning && !hasContent
@@ -321,13 +373,11 @@ const hasAnswerContent = computed(() => {
 })
 
 const isReasoningStreaming = computed(() => {
-  const isStreaming = (props.message.id < 0) || isCurrentlyRegenerating.value
-  return isStreaming && hasReasoningContent.value && !hasAnswerContent.value
+  return isStreaming.value && hasReasoningContent.value && !hasAnswerContent.value
 })
 
 const isAnswerStreaming = computed(() => {
-  const isStreaming = (props.message.id < 0) || isCurrentlyRegenerating.value
-  return isStreaming && hasAnswerContent.value
+  return isStreaming.value && hasAnswerContent.value
 })
 
 const reasoningCharCount = computed(() => {
@@ -338,20 +388,16 @@ const toggleReasoning = () => {
   isReasoningExpanded.value = !isReasoningExpanded.value
 }
 
-const handleAction = async (actionType: 'share' | 'retry' | 'copy') => {
-  switch (actionType) {
-    case 'share':
-      handleShare();
-      break;
-    case 'retry':
-      handleRetry();
-      break;
-    case 'copy':
-      handleCopy();
-      break;
-    default:
-      console.warn(`${t('chat.unknownActionType')}: ${actionType}`);
-  }
+const handleAction = async (actionType: 'share' | 'retry' | 'copy'| 'continue') => {
+  if (actionType === 'share') handleShare();
+  else if (actionType === 'retry') handleRetry();
+  else if (actionType === 'copy') handleCopy();
+  else if (actionType === 'continue') handleContinue();
+}
+
+const handleContinue = () => {
+    const currentModel = GET_MODEL() || 'deepseek-chat';
+    chatStore.continueGenerate(props.message.session, currentModel);
 }
 
 const handleShare = () => {
@@ -407,6 +453,8 @@ const handleCopy = async () => {
 .fade-leave-to {
   opacity: 0;
 }
+
+
 
 /* 缩放动画 */
 @keyframes zoomIn {

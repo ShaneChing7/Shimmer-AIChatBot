@@ -1,3 +1,4 @@
+// api/chat/type.ts
 
 // 定义通用返回类型
 export interface ResponseData<T = any> {
@@ -22,6 +23,9 @@ export interface PaginationData<T> {
 // 消息发送者角色
 export type MessageSender = 'user' | 'ai'
 
+//  新增: 消息状态类型
+export type MessageStatus = 'completed' | 'generating' | 'interrupted' | 'error';
+
 // 附件类型
 export interface MessageFile {
   id: number;
@@ -41,6 +45,9 @@ export interface ChatMessage {
   content_type: 'text' | 'markdown' | 'image_url' | 'file' 
   created_at: string // 创建时间
   reasoning_content?: string;  // DeepSeek Reasoner 的推理过程
+  
+  //  新增: 消息状态
+  status?: MessageStatus;
 
   // 支持多文件 (兼容旧的单文件 file_url)
   files?: MessageFile[] 

@@ -2,7 +2,7 @@
   <div
     class=" mt-0.5 w-55 group relative flex items-center gap-3 rounded-md px-3 py-2 cursor-pointer transition-colors select-none"
     
-    :class="props.isActive // ✅ 核心状态逻辑
+    :class="props.isActive //  核心状态逻辑
       ? [ 
           // 状态 1: 选中 (Active) 时的样式
           'bg-stone-200 text-sidebar-accent-foreground',
@@ -84,7 +84,7 @@ const props = defineProps<{
    isActive: boolean; // 用于高亮当前选中的会话
 }>();
 
-// ✅ 核心修改：添加 'select-session' 事件
+//  核心修改：添加 'select-session' 事件
 const emit = defineEmits<{
     (e: 'delete', id: number): void;
     (e: 'select-session', id: number): void; // 新增事件

@@ -42,7 +42,7 @@ export const reqChatSessionCreate = (data: ChatSessionCreateData) =>
 
 
 /**
- * ✅ 优化 3: 获取会话详情 (GET /api/sessions/{pk}/)
+ *  优化 3: 获取会话详情 (GET /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  * 返回数据为完整的会话详情，包含所有历史消息
  */

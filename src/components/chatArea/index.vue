@@ -143,7 +143,7 @@
               multiple
             />
 
-            <!-- Model Selector  -->
+            <!-- 模型选择器 -->
             <div class="relative">
               <div 
                 class="cursor-pointer rounded-2xl px-2 py-2 h-3/5 bg-gray-50 dark:bg-gray-700 
@@ -185,13 +185,16 @@
 
             <div class="flex-1" style="min-width: 0"></div>
             
+            <!-- 发送/停止 按钮 -->
             <div
               class="flex items-center justify-center rounded-full hover:bg-muted transition-colors duration-75 cursor-pointer"
               style="width: 40px; height: 40px;"
-              @click="!loading && sendMessage()"
-              :class="loading ? 'opacity-50 pointer-events-none' : ''"
+              @click="handleSendOrStop"
             >
-              <Send class="size-6 text-gray-500" />
+              <!-- 停止生成 (圆角正方形) -->
+              <Square v-if="isGenerating" class="size-4 fill-current" />
+              <!-- 发送消息 -->
+              <Send v-else class="size-5 ml-0.5" />
             </div>
 
           </div>
@@ -204,7 +207,7 @@
 
 <script setup lang="ts">
 import ShimmerAvatar from './ShimmerAvatar.vue';
-import { Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft, FileText, X } from 'lucide-vue-next'
+import { Send, Plus, ChevronDown, Check, ChevronsLeftRight, ChevronsRightLeft, FileText, X,Square } from 'lucide-vue-next'
 import { ref, watch, computed, onUnmounted, nextTick } from 'vue'
 import MessageList from './MessageList.vue'
 import { toast } from 'vue-sonner';
@@ -223,6 +226,8 @@ const isLoggedIn = computed(() => userStore.isLoggedIn);
 // 绑定状态和 Getter
 const activeConversation = computed(() => chatStore.currentSession); 
 const currentMessages = computed(() => chatStore.currentMessages);
+// 获取当前是否生成中
+const isGenerating = computed(() => chatStore.isCurrentGenerating);
 const { loading } = storeToRefs(chatStore)
 
 //欢迎语句
@@ -347,10 +352,21 @@ const formatFileSize = (bytes: number) => {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + ['B', 'KB', 'MB', 'GB'][i];
 };
-
+// 统一处理发送或停止
+const handleSendOrStop = async () => {
+  // 如果正在生成，则是停止
+  if (isGenerating.value) {
+    if (activeConversation.value?.id) {
+      chatStore.stopGenerate(activeConversation.value.id);
+    }
+    return;
+  }
+  // 否则是发送
+  sendMessage();
+};
 // sendMessage 函数
 const sendMessage = async () => {
-  if (loading.value) {
+  if (loading.value) {// 这里的 loading 是指全局加载，不是生成中
     toast.warning(t('chat.sessionLoading'));
     return;
   }
