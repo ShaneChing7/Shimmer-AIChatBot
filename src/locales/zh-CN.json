@@ -122,7 +122,8 @@
       "general": "通用设置",
       "account": "账号管理",
       "data": "数据管理",
-      "terms": "服务协议"
+      "terms": "服务协议",
+      "model": "模型设置"
     },
     "general": {
       "theme": "主题",
@@ -153,6 +154,19 @@
       "avatarUpdateSuccess": "头像更新成功",
       "uploadFailed": "上传头像失败",
       "changePasswordFailed": "修改密码失败"
+    },
+    "model": {
+      "provider": "DeepSeek 模型",
+      "desc": "配置您的 DeepSeek API Key 以启用模型。您的密钥将仅存储在本地浏览器中。",
+      "getKey": "获取 API Key",
+      "keySaved": "API Key 已保存",
+      "usage": "用量与余额",
+      "balance": "账户余额",
+      "tokens": "Token 使用量",
+      "usageRefreshed": "用量统计已更新",
+      "sinceLastReset":"自上次重置以来",
+      "balanceRefreshed":"余额刷新成功",
+      "apiExpired":"查询失败：API 密钥无效或已过期"
     },
     "data": {
       "storage": "存储空间",

@@ -17,6 +17,8 @@ import type {
   MessageFile,
 } from "@/api/chat/type";
 import useUserStore from "./user";
+// 引入 Model Store 获取 API Key
+import useModelStore from "@/store/modules/model"; 
 
 interface ChatState {
   sessions: ChatSession[] | null;
@@ -268,6 +270,13 @@ export const useChatStore = defineStore("chat", {
         if (token) {
           headers["Authorization"] = `Bearer ${token}`;
         }
+
+        // 将 API Key 添加到请求头
+        const modelStore = useModelStore();
+        if (modelStore.apiKey) {
+          headers["X-DeepSeek-API-Key"] = modelStore.apiKey;
+        }
+
         // 使用 FormData 时，不要手动设置 Content-Type 为 application/json 或 multipart/form-data
         // 浏览器会自动设置正确的 Content-Type 和 boundary
         const response = await fetch(apiUrl, {
@@ -368,6 +377,12 @@ export const useChatStore = defineStore("chat", {
         const headers: HeadersInit = { "Content-Type": "application/json" };
         const token = localStorage.getItem('TOKEN');
         if (token) headers["Authorization"] = `Bearer ${token}`;
+        
+        // 将 API Key 添加到请求头
+        const modelStore = useModelStore();
+        if (modelStore.apiKey) {
+          (headers as any)["X-DeepSeek-API-Key"] = modelStore.apiKey;
+        }
 
         const response = await fetch(apiUrl, {
           method: "POST",
@@ -432,12 +447,20 @@ export const useChatStore = defineStore("chat", {
         this.abortControllers.set(sessionId, controller);
 
         try {
+            // 构造 Headers
+            const headers: HeadersInit = { 
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${localStorage.getItem('TOKEN')}`
+            };
+            // 将 API Key 添加到请求头
+            const modelStore = useModelStore();
+            if (modelStore.apiKey) {
+              (headers as any)["X-DeepSeek-API-Key"] = modelStore.apiKey;
+            }
+
             const response = await fetch(`/api/sessions/${sessionId}/regenerate/`, {
                 method: "POST",
-                headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem('TOKEN')}`
-                },
+                headers: headers,
                 body: JSON.stringify({ message_id: messageId, model }),
                 signal: controller.signal
             });
@@ -454,7 +477,7 @@ export const useChatStore = defineStore("chat", {
         } catch (e: any) {
             if (e.name !== 'AbortError') {
                  session.messages[msgIndex].content = `Error: ${e.message}`;
-                 session.messages[msgIndex].status = 'error';
+                 session.messages[msgIndex].status = 'completed';
             }
         } finally {
             this.generatingSessionIds.delete(sessionId);
@@ -470,55 +493,122 @@ export const useChatStore = defineStore("chat", {
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
 
-        while (true) {
-            const { done, value } = await reader.read();
-            if (done) break;
-            buffer += decoder.decode(value, { stream: true });
-            let newlineIndex;
-            while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
-                const line = buffer.slice(0, newlineIndex).trim();
-                buffer = buffer.slice(newlineIndex + 1);
-                if (line.startsWith('data: ')) {
-                    const dataStr = line.substring(6);
-                    if (dataStr === ':keepalive') continue;
-                    try {
-                        const data = JSON.parse(dataStr);
-                        
-                        //  关键：从缓存中获取 Session，而不是 this.currentSession
-                        // 这样即使切换了会话，这里依然能更新正确的对象
-                        const session = this.sessionCache.get(sessionId);
-                        if (!session) break; 
+        // 标记是否收到过任何有效数据，用于处理空响应情况
+        let hasReceivedData = false;
 
-                        const msgIndex = session.messages.findIndex(m => m.id === targetMessageId);
-                        if (msgIndex === -1) continue;
-                        const targetMsg = session.messages[msgIndex];
+        try {
+          while (true) {
+              const { done, value } = await reader.read();
+              if (done) break;
+              
+              buffer += decoder.decode(value, { stream: true });
+              let newlineIndex;
+              while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
+                  const line = buffer.slice(0, newlineIndex).trim();
+                  buffer = buffer.slice(newlineIndex + 1);
+                  
+                  if (line.startsWith('data: ')) {
+                      const dataStr = line.substring(6);
+                      if (dataStr === ':keepalive') continue;
+                      
+                      try {
+                          const data = JSON.parse(dataStr);
+                          hasReceivedData = true;
 
-                        if (data.event === 'done') {
-                            // 完成时更新完整对象
-                            // 如果是追加模式，我们需要合并内容，而不是替换
-                            if (appendMode) {
-                                // 如果是继续生成，更新元数据，但不覆盖内容（因为流已经追加了）
-                                if (targetMsg) {
-                                    targetMsg.status = 'completed'; // 标记完成
-                                    // 如果后端返回了新的 ID 或其他字段，可以更新
-                                    if (data.message && data.message.id) {
-                                        targetMsg.id = data.message.id;
-                                    }
+                          const session = this.sessionCache.get(sessionId);
+                          if (!session) break; 
+
+                          const msgIndex = session.messages.findIndex(m => m.id === targetMessageId);
+                          if (msgIndex === -1) continue;
+                          const targetMsg = session.messages[msgIndex];
+
+                          // ✅ 1. 处理错误事件 (核心修复)
+                          if (data.event === 'error') {
+                              console.error("Stream Error Event:", data.detail);
+                              if (!targetMsg) continue;
+                              targetMsg.content += `\n\n> ⚠️ **API Error**: ${data.detail}\n`;
+                              targetMsg.status = 'completed'; 
+                              toast.error(`API Error: ${data.detail}`);
+                              // 收到错误后直接中断循环
+                              return; 
+                          }
+
+                          // ✅ 2. 处理完成事件
+                          else if (data.event === 'done') {
+                              if (appendMode) {
+                                  if (targetMsg) {
+                                      targetMsg.status = 'completed'; 
+                                      if (data.message && data.message.id) {
+                                          targetMsg.id = data.message.id;
+                                      }
+                                  }
+                              } else {
+                                  // 替换模式下，更新完整对象
+                                  session.messages.splice(msgIndex, 1, { ...data.message, reasoning_content: data.reasoning || "" });
+                              }
+                          } 
+                          
+                          // ✅ 3. 处理普通内容
+                          else if (data.type === 'reasoning') {
+                              if (targetMsg) {
+                                  if (!targetMsg.reasoning_content) targetMsg.reasoning_content = "";
+                                  targetMsg.reasoning_content += data.content;
+                              }
+                          } else if (data.type === 'content') {
+                              if (targetMsg) {
+                                  targetMsg.content += data.content;
+                              }
+                          }
+                      } catch (e) {
+                          // 解析单行 JSON 失败，通常忽略，但也可能是非 SSE 格式的报错信息
+                          console.warn("JSON Parse Error on line:", line);
+                      }
+                  } 
+                  // ✅ 4. 边缘情况：如果后端返回了 raw json (非 data: 开头)，尝试解析是否有 error 字段
+                  // 这种情况通常发生在 Django 没有正确 wrap StreamingHttpResponse，直接返回了 JsonResponse
+                  else if (line.startsWith('{') && line.endsWith('}')) {
+                      try {
+                         const jsonObj = JSON.parse(line);
+                         if (jsonObj.event === 'error' || jsonObj.error) {
+                             const errorMsg = jsonObj.detail || jsonObj.error?.message || "Unknown error";
+                             const session = this.sessionCache.get(sessionId);
+                             if (session) {
+                                const msgIndex = session.messages.findIndex(m => m.id === targetMessageId);
+                                if (msgIndex !== -1) {
+                                   const targetMsg = session.messages[msgIndex];
+                                   if (targetMsg) {
+                                       targetMsg.content += `\n\n> ⚠️ **Error**: ${errorMsg}`;
+                                       targetMsg.status = 'error';
+                                   }
                                 }
-                            } else {
-                                session.messages.splice(msgIndex, 1, { ...data.message, reasoning_content: data.reasoning || "" });
-                            }
-                        } else if (data.type === 'reasoning') {
-                             if (targetMsg) {
-                                 if (!targetMsg.reasoning_content) targetMsg.reasoning_content = "";
-                                 targetMsg.reasoning_content += data.content;
                              }
-                        } else if (data.type === 'content') {
-                             if (targetMsg) {
-                                 targetMsg.content += data.content;
-                             }
-                        }
-                    } catch (e) {}
+                             toast.error(errorMsg);
+                             return;
+                         }
+                      } catch(e) {}
+                  }
+              }
+          }
+        } catch (error: any) {
+           console.error("Stream reading error:", error);
+           throw error; // 抛出给外层 catch 处理
+        } finally {
+            // 如果整个流结束了，但消息状态还是 generating，且没有收到数据 (Empty Response)
+            // 这种情况通常意味着后端 crash 了或者连不上
+            const session = this.sessionCache.get(sessionId);
+            if (session) {
+                const msgIndex = session.messages.findIndex(m => m.id === targetMessageId);
+                if (msgIndex !== -1) {
+                    const msg = session.messages[msgIndex];
+                    if (msg?.status === 'generating') {
+                         // 如果已经有内容了，算 completed/interrupted，如果没有内容，算 error
+                         if (!msg.content && !msg.reasoning_content) {
+                             msg.status = 'error';
+                             msg.content = "**[Connection Closed Without Response]**";
+                         } else {
+                             msg.status = 'completed'; // 兜底
+                         }
+                    }
                 }
             }
         }

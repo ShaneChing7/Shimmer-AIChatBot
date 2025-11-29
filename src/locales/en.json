@@ -122,7 +122,8 @@
       "general": "General",
       "account": "Profile",
       "data": "Data",
-      "terms": "Terms"
+      "terms": "Terms",
+      "model": "Model"
     },
     "general": {
       "theme": "Theme",
@@ -153,6 +154,19 @@
       "avatarUpdateSuccess": "Avatar updated successfully",
       "uploadFailed": "Failed to upload avatar",
       "changePasswordFailed": "Failed to change password"
+    },
+    "model": {
+      "provider": "DeepSeek Model",
+      "desc": "Configure your DeepSeek API key. Your key is stored locally.",
+      "getKey": "Get API Key",
+      "keySaved": "API Key saved locally",
+      "usage": "Usage & Balance",
+      "balance": "Balance",
+      "tokens": "Token Usage",
+      "usageRefreshed": "Usage statistics updated",
+      "sinceLastReset":"Since last reset",
+      "balanceRefreshed":"Balance refreshed successfully",
+      "apiExpired":"Query failed: Invalid or expired API key"
     },
     "data": {
       "storage": "Storage",

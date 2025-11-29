@@ -101,6 +101,8 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            
                         </div>
 
                         <!-- Account Tab -->
@@ -232,6 +234,94 @@
                             </div>
                         </div>
 
+                        <!-- Model Tab (Replaces Data Tab) -->
+                        <div v-else-if="activeTab === 'model'" class="animate-fade-in space-y-6">
+                            
+                            <!-- Header Info -->
+                            <div class="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-100 dark:border-blue-800">
+                                <div class="flex gap-3 items-center">
+                                    <div class="p-2 bg-white shadow dark:bg-blue-900/40 rounded-lg text-blue-600 dark:text-blue-400">
+                                        <img src="/deepseek.svg" alt="DeepSeek" class="w-5 h-5 object-contain" />
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-blue-800 dark:text-blue-300">{{ t('settings.model.provider') || 'DeepSeek Model' }}</h3>
+                                        <p class="text-xs text-blue-600/80 dark:text-blue-400/80 mt-1 leading-relaxed">
+                                            {{ t('settings.model.desc') || 'Configure your DeepSeek API key to enable advanced model capabilities. Your key is stored locally.' }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- API Key Input -->
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">DeepSeek API Key</label>
+                                    <a href="https://platform.deepseek.com/" target="_blank" class="text-xs text-blue-500 hover:text-blue-600 hover:underline flex items-center gap-1">
+                                        {{ t('settings.model.getKey') || 'Get API Key' }}
+                                        <ExternalLink :size="10" />
+                                    </a>
+                                </div>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <KeyRound :size="16" class="text-gray-400" />
+                                    </div>
+                                    <input 
+                                        :type="showApiKey ? 'text' : 'password'" 
+                                        v-model="apiKey"
+                                        placeholder="sk-..." 
+                                        class="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 outline-none transition-all placeholder:text-gray-400"
+                                    >
+                                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer" @click="showApiKey = !showApiKey">
+                                        <Eye v-if="!showApiKey" :size="16" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                                        <EyeOff v-else :size="16" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300" />
+                                    </div>
+                                </div>
+                                <div class="flex justify-end">
+                                    <button @click="saveApiKey" class="px-4 py-1.5 text-xs font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm shadow-blue-200 dark:shadow-none">
+                                        {{ t('common.save') || 'Save Key' }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="h-[1px] bg-gray-100 dark:bg-gray-800 w-full"></div>
+
+                            <!-- Usage Statistics -->
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ t('settings.model.usage') || 'Usage & Balance' }}</span>
+                                    <button @click="refreshUsage" class="text-gray-400 hover:text-blue-500 transition-colors p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800" :title="t('common.refresh')">
+                                        <RefreshCw :size="14" :class="{'animate-spin': isRefreshingUsage}" />
+                                    </button>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-3">
+                                    <!-- Balance Card -->
+                                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
+                                        <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">{{ t('settings.model.balance') || 'Balance' }}</span>
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ deepSeekBalance }}</span>
+                                            <span class="text-xs text-gray-500">CNY</span>
+                                        </div>
+                                        <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
+                                            <div class="bg-emerald-500 h-full rounded-full" style="width: 60%"></div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Token Usage Card -->
+                                    <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
+                                        <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">{{ t('settings.model.tokens') || 'Token Usage' }}</span>
+                                        <div class="flex items-baseline gap-1">
+                                            <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ estimatedTokens }}</span>
+                                            <span class="text-xs text-gray-500">Tokens</span>
+                                        </div>
+                                        <div class="mt-2 text-[10px] text-gray-400">
+                                            {{t('settings.model.sinceLastReset') || 'Since last reset'}}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Terms Tab -->
                         <div v-else-if="activeTab === 'terms'" class="animate-fade-in h-full flex flex-col">
                             <!-- ... existing terms content ... -->
@@ -334,18 +424,22 @@
 
 <script setup lang="ts">
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ref, computed, watch, onUnmounted, reactive } from 'vue'
+import { ref, computed, watch, onUnmounted, reactive,onMounted } from 'vue'
 import { defineProps, defineEmits } from 'vue';
 import { 
     Settings, User, Database, FileText, X, Sun, Moon, Monitor, 
     ChevronDown, Check, LogOut, KeyRound, UserPen, ChevronRight,
-    Camera, DatabaseZap, Download, ShieldAlert
+    Camera, DatabaseZap, Download, ShieldAlert,
+    BrainCircuit, RefreshCw, Eye, EyeOff, Bot, ExternalLink // Added Icons
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
 // 导入 Store
 import useUserStore from '@/store/modules/user'
 import { useChatStore } from "@/store/modules/chat";
+// 引入 Model Store 和 storeToRefs
+import useModelStore from '@/store/modules/model'
+import { storeToRefs } from 'pinia'
 import { toast } from 'vue-sonner';
 
 const chatStore = useChatStore()
@@ -402,11 +496,13 @@ onUnmounted(() => {
 });
 
 // -------------------- 菜单逻辑 --------------------
+// Updated Menu Items: Changed 'data' to 'model'
 const menuItems = computed(() => {
     return [
         { id: 'general', label: t('settings.menu.general') || 'General', icon: Settings },
         { id: 'account', label: t('settings.menu.account') || 'Account', icon: User },
         { id: 'data', label: t('settings.menu.data') || 'Data', icon: Database },
+        { id: 'model', label: t('settings.menu.model') || 'Model Settings', icon: BrainCircuit }, // Renamed and Icon changed
         { id: 'terms', label: t('settings.menu.terms') || 'About', icon: FileText },
     ]
 });
@@ -588,6 +684,43 @@ const handleLogout = async () => {
     await chatStore.clearChatState();
     close();
 }
+
+// -------------------- 业务逻辑：DeepSeek 模型设置 --------------------
+const modelStore = useModelStore();
+// 使用 storeToRefs 保持响应性
+const { balance, currency, isLoading: isModelLoading, estimatedTokens } = storeToRefs(modelStore);
+
+// 从 Store 初始化 apiKey (若有)
+const apiKey = ref(modelStore.apiKey || '');
+const showApiKey = ref(false);
+
+// 直接绑定 Store 的数据
+const deepSeekBalance = computed(() => balance.value);
+const currencyLabel = computed(() => currency.value);
+const isRefreshingUsage = computed(() => isModelLoading.value);
+
+
+const saveApiKey = async () => {
+    if(!apiKey.value) return;
+    // 调用 Store Action 保存 Key
+    modelStore.setApiKey(apiKey.value);
+    toast.success(t('settings.model.keySaved') || 'API Key saved locally');
+    
+    // 保存后尝试刷新余额验证
+    await modelStore.refreshUsage(true);
+};
+
+const refreshUsage = async () => {
+    if (isRefreshingUsage.value) return;
+    await modelStore.refreshUsage(true);
+};
+
+// 组件挂载时初始化 Store（读取本地 Key 并刷新余额）
+onMounted(() => {
+    modelStore.init();
+    // 确保本地 input 框显示 Store 中的 Key
+    apiKey.value = modelStore.apiKey;
+});
 
 </script>
 

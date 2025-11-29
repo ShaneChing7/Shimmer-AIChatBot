@@ -7,7 +7,7 @@ import { useChatStore } from '@/store/modules/chat';
 import { toast } from 'vue-sonner';
 const request = axios.create({
 	baseURL: import.meta.env.VITE_APP_BASE_API,
-	timeout: 5000000,
+	timeout: 5000,
 })
 
 request.interceptors.request.use((config) => {
