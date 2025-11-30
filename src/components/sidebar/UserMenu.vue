@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import {  onMounted, onBeforeUnmount } from 'vue';
 import { Settings, MessageSquare, LogOut } from 'lucide-vue-next';
 import useUserStore from '@/store/modules/user';
 import { useChatStore } from '@/store/modules/chat';

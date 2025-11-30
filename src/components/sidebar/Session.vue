@@ -60,9 +60,9 @@ import { MessageSquareText , Trash2, Pencil  } from 'lucide-vue-next'
 import { formatSessionTime } from '@/utils/time';
 import type { ChatSession } from '@/api/chat/type';
 import EditTitleModal from './EditTitleModal.vue';
-import { useI18n } from 'vue-i18n'; // 引入 i18n
+// import { useI18n } from 'vue-i18n'; // 引入 i18n
 
-const { locale } = useI18n(); // 获取 locale
+// const { locale } = useI18n(); // 获取 locale
 
 let titleModalVisible = ref<boolean>(false)
 
@@ -73,7 +73,7 @@ let titleModalVisible = ref<boolean>(false)
 const formattedTime = computed(() => {
     // 访问 locale.value，强制 Vue 建立依赖
     // 即使 locale.value 不直接参与计算，Vue 也会知道它应该在语言切换时更新
-    const currentLocale = locale.value; 
+    // const currentLocale = locale.value; 
     
     // 调用您的工具函数
     return formatSessionTime(props.session.created_at);

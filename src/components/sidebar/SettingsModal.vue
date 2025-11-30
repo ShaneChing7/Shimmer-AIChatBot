@@ -467,9 +467,9 @@ import { ref, computed, watch, onUnmounted, reactive,onMounted } from 'vue'
 import { defineProps, defineEmits } from 'vue';
 import { 
     Settings, User, Database, FileText, X, Sun, Moon, Monitor, 
-    ChevronDown, Check, LogOut, KeyRound, UserPen, ChevronRight,
-    Camera, DatabaseZap, Download, ShieldAlert, Trash2,
-    BrainCircuit, RefreshCw, Eye, EyeOff, Bot, ExternalLink // Added Icons
+    ChevronDown, Check, LogOut, KeyRound, ChevronRight,
+    Camera,  Download, ShieldAlert, Trash2,
+    BrainCircuit, RefreshCw, Eye, EyeOff, ExternalLink // Added Icons
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
@@ -485,7 +485,7 @@ const chatStore = useChatStore()
 const userStore = useUserStore()
 
 const { t, locale } = useI18n()
-const props = defineProps<{ visible: boolean }>();
+defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ (e: 'update:visible', val: boolean): void }>();
 
 // -------------------- 语言和主题逻辑 (保持不变) --------------------
@@ -794,7 +794,7 @@ const handleLogout = async () => {
 // -------------------- 业务逻辑：DeepSeek 模型设置 --------------------
 const modelStore = useModelStore();
 // 使用 storeToRefs 保持响应性
-const { balance, currency, isLoading: isModelLoading, estimatedTokens } = storeToRefs(modelStore);
+const { balance, isLoading: isModelLoading, estimatedTokens } = storeToRefs(modelStore);
 
 // 从 Store 初始化 apiKey (若有)
 const apiKey = ref(modelStore.apiKey || '');
@@ -802,7 +802,7 @@ const showApiKey = ref(false);
 
 // 直接绑定 Store 的数据
 const deepSeekBalance = computed(() => balance.value);
-const currencyLabel = computed(() => currency.value);
+// const currencyLabel = computed(() => currency.value);
 const isRefreshingUsage = computed(() => isModelLoading.value);
 
 

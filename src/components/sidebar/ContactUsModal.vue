@@ -144,7 +144,7 @@ import {
   X, Mail, Copy, Check,Github , ExternalLink 
 } from 'lucide-vue-next';
 
-const props = defineProps<{
+defineProps<{
   visible: boolean;
 }>();
 

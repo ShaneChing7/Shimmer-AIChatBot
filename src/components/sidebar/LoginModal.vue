@@ -111,7 +111,7 @@
 import { useI18n } from 'vue-i18n'
 import { ref, reactive, watch } from 'vue';
 import { X, Loader2 } from 'lucide-vue-next';
-import type { LoginFormData, RegisterFormData } from '@/api/user/type';
+import type { RegisterFormData } from '@/api/user/type';
 // 假设您已经引入了您的用户 Store
 import useUserStore from '@/store/modules/user'; 
 import { useChatStore } from '@/store/modules/chat';

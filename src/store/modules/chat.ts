@@ -502,7 +502,7 @@ export const useChatStore = defineStore("chat", {
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
 
-        let hasReceivedData = false;
+        // let hasReceivedData = false;
 
         try {
           while (true) {
@@ -521,7 +521,7 @@ export const useChatStore = defineStore("chat", {
                       
                       try {
                           const data = JSON.parse(dataStr);
-                          hasReceivedData = true;
+                          // hasReceivedData = true;
 
                           const session = this.sessionCache.get(sessionId);
                           if (!session) break; 

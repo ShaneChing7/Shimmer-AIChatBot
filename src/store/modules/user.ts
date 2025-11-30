@@ -6,7 +6,6 @@ import type {
   LoginResponseData, 
   UserInfoResponseData, 
   RegisterFormData, 
-  RegisterResponseData,
   PasswordChangeFormData,
   AccountDeleteFormData,
   AvatarUploadData,
