@@ -12,7 +12,8 @@ import type {
   ChatSessionCreateResponseData,
   ChatMessageCreateData,
   ChatMessageCreateResponseData,
-  ChatSessionDetailResponseData, // 新增导入
+  ChatSessionDetailResponseData, 
+  ChatSessionExportResponseData, // 新增
 } from './type'
 
 // -------------------- API 地址 --------------------
@@ -42,7 +43,7 @@ export const reqChatSessionCreate = (data: ChatSessionCreateData) =>
 
 
 /**
- *  优化 3: 获取会话详情 (GET /api/sessions/{pk}/)
+ * 获取会话详情 (GET /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  * 返回数据为完整的会话详情，包含所有历史消息
  */
@@ -65,7 +66,7 @@ export const reqChatMessageCreate = (sessionId: number, data: ChatMessageCreateD
   )
 
 /**
- *   删除聊天会话 (DELETE /api/sessions/{pk}/)
+ * 删除聊天会话 (DELETE /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  */
 export const reqDeleteSession = (sessionId: number) =>
@@ -74,7 +75,7 @@ export const reqDeleteSession = (sessionId: number) =>
   )
 
 /**
- *   修改会话标题 (PATCH /api/sessions/{pk}/)
+ * 修改会话标题 (PATCH /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  * @param data - 包含新标题
  * @returns 更新后的会话基础信息 (ChatSession)
@@ -83,4 +84,20 @@ export const reqUpdateSessionTitle = (sessionId: number, data: ChatSessionCreate
   request.patch<any, ResponseData<ChatSession>>(
     `${API.CHAT_SESSIONS_URL}${sessionId}/`,
     data
+  )
+
+/**
+ * 新增: 删除所有会话 (DELETE /api/sessions/delete-all/)
+ */
+export const reqDeleteAllSessions = () =>
+  request.delete<any, ResponseData<any>>(
+    `${API.CHAT_SESSIONS_URL}delete-all/`
+  )
+
+/**
+ * 新增: 导出所有数据 (GET /api/sessions/export-data/)
+ */
+export const reqExportAllSessions = () =>
+  request.get<any, ChatSessionExportResponseData>(
+    `${API.CHAT_SESSIONS_URL}export-data/`
   )

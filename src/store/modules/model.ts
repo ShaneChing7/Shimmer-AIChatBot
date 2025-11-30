@@ -69,19 +69,23 @@ export const useModelStore = defineStore('model', () => {
 
     try {
       isLoading.value = true
+      // 如果出错，Request 拦截器会抛出异常跳到 catch，不会执行下面的赋值
       const res = await reqCheckDeepSeekUsage({ api_key: apiKey.value })
       
-      if (res.code === 200 && res.data) {
-        isAvailable.value = res.data.is_available
-        
-        // 提取余额信息 (CNY)
-        const cnyInfo = res.data.balance_infos.find(item => item.currency === 'CNY')
+      const data = res?.data
+      if (!data) {
+        // 没有返回数据，视为不可用
+        isAvailable.value = false
+      } else {
+        // 成功逻辑
+        isAvailable.value = !!data.is_available
+
+        const cnyInfo = data.balance_infos?.find((item: any) => item.currency === 'CNY')
         if (cnyInfo) {
           balance.value = cnyInfo.total_balance
           currency.value = cnyInfo.currency
-        } else if (res.data.balance_infos && res.data.balance_infos.length > 0) {
-          // 如果没有 CNY，取第一个（做存在性校验）
-          const firstInfo = res.data.balance_infos[0]
+        } else if (data.balance_infos && data.balance_infos.length > 0) {
+          const firstInfo = data.balance_infos[0]
           if (firstInfo) {
             balance.value = firstInfo.total_balance ?? balance.value
             currency.value = firstInfo.currency ?? currency.value
@@ -89,13 +93,11 @@ export const useModelStore = defineStore('model', () => {
         }
 
         if (showToast) toast.success(i18n.global.t('settings.model.balanceRefreshed'))
-      } else {
-        if (showToast) toast.error(res.message || '获取余额失败')
       }
+      
     } catch (error: any) {
       if (showToast){
         if(error.status == 400){
-          toast.error(i18n.global.t('settings.model.apiExpired'))
         }
       }
       // 如果是 401 或 Key 无效错误，可以在这里考虑是否清空状态，但为了用户体验通常保留输入

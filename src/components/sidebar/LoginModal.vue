@@ -1,86 +1,104 @@
 <template>
-  <div v-if="visible" class="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
+  <div v-if="visible" class="fixed inset-0 z-40 bg-black/10 backdrop-blur-md transition-opacity duration-300"
     @click="closeModal"></div>
 
   <transition name="fade-scale">
-    <div v-if="visible" class="fixed flex flex-col bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 top-1/2 left-1/2 z-50 
-             w-[90%] max-w-sm sm:max-w-md max-h-[600px] 
-             rounded-xl -translate-x-1/2 -translate-y-1/2 shadow-2xl p-6 transition-all duration-300 ease-out">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-black">
-           {{ isLoginMode ? t('auth.modalTitleLogin') : t('auth.modalTitleRegister') }}
-        </h2>
-        <div aria-label="close" :title="t('auth.close')" class="p-1 cursor-pointer rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          @click="closeModal" >
-          <X :size="20" ></X>
-        </div>
-      </div>
-
-      <div class="space-y-4">
-
-        <div class="flex flex-col">
-          <label for="username" class="text-sm font-medium mb-1">{{ t('auth.usernameLabel') }}</label>
-          <div class="border rounded-lg ">
-            <input id="username" v-model="formData.username" type="text" :placeholder="t('auth.usernamePlaceholder')" class="w-full px-4 py-2.5 
-         border rounded-lg 
-         bg-gray-50 dark:bg-gray-700 
-         border-gray-300 dark:border-gray-600 
-         focus:outline-none focus:ring-1 focus:ring-black focus:border-black
-         transition-all duration-200;" :class="{ 'border-red-500 ring-red-500': errors.username }" />
-          </div>
-
-          <p v-if="errors.username" class="text-xs text-red-500 mt-1">{{ errors.username }}</p>
-        </div>
-
-        <div class="flex flex-col">
-          <label for="password" class="text-sm font-medium mb-1">{{ t('auth.passwordLabel') }}</label>
-          <div class="border rounded-lg ">
-            <input id="password" v-model="formData.password" type="password" :placeholder="t('auth.passwordPlaceholder')" class="w-full px-4 py-2.5 
-         border rounded-lg 
-         bg-gray-50 dark:bg-gray-700 
-         border-gray-300 dark:border-gray-600 
-         focus:outline-none focus:ring-1 focus:ring-black focus:border-black
-         transition-all duration-200;" :class="{ 'border-red-500 ring-red-500': errors.password }" />
-          </div>
-
-          <p v-if="errors.password" class="text-xs text-red-500 mt-1">{{ errors.password }}</p>
-        </div>
-
-        <div v-if="!isLoginMode" class="flex flex-col">
-          <label for="confirmPassword" class="text-sm font-medium mb-1">{{ t('auth.confirmPasswordLabel') }}</label>
-          <div class="border rounded-lg">
-            <input id="confirmPassword" v-model="formData.password2" type="password" :placeholder="t('auth.confirmPasswordPlaceholder')"
-            class="w-full px-4 py-2.5 
-         border rounded-lg 
-         bg-gray-50 dark:bg-gray-700 
-         border-gray-300 dark:border-gray-600 
-         focus:outline-none focus:ring-1 focus:ring-black focus:border-black
-         transition-all duration-200;" :class="{ 'border-red-500 ring-red-500': errors.confirmPassword }" />
-          </div>
+    <div v-if="visible" class="fixed flex flex-col bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 top-1/2 left-1/2 z-50 
+              w-[90%] max-w-sm sm:max-w-md max-h-[600px] 
+              rounded-[25px] -translate-x-1/2 -translate-y-1/2 shadow-2xl p-8 
+              border border-gray-100 dark:border-gray-800
+              transition-all duration-300 ease-out">
+      
+      <div class="flex justify-between items-center mb-8">
+        <!-- Logo and Title Container -->
+        <div class="flex items-center gap-3">
+          <img src="/shimmer.svg" alt="Logo" class="w-8 h-8 object-contain" />
           
-          <p v-if="errors.confirmPassword" class="text-xs text-red-500 mt-1">{{ errors.confirmPassword }}</p>
+          <!-- 标题增加过渡动画 -->
+          <Transition name="fade" mode="out-in">
+            <h2 :key="isLoginMode ? 'login' : 'register'" class="text-2xl font-black tracking-tight">
+                {{ isLoginMode ? t('auth.modalTitleLogin') : t('auth.modalTitleRegister') }}
+            </h2>
+          </Transition>
         </div>
+        
+        <div aria-label="close" :title="t('auth.close')" class="p-1.5 cursor-pointer rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+          @click="closeModal" >
+          <X :size="20" class="text-gray-500 dark:text-gray-400"></X>
+        </div>
+      </div>
+
+      <!-- 表单区域：移除 space-y-5，改为手动控制 margin 以配合动画 -->
+      <div class="flex flex-col">
+
+        <div class="flex flex-col space-y-1.5 mb-5">
+          <label for="username" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">{{ t('auth.usernameLabel') }}</label>
+          <div class="relative">
+            <input id="username" v-model="formData.username" type="text" :placeholder="t('auth.usernamePlaceholder')" 
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 outline-none transition-all placeholder:text-gray-400" 
+            :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-100': errors.username }" />
+          </div>
+          <p v-if="errors.username" class="text-xs text-red-500 ml-1">{{ errors.username }}</p>
+        </div>
+
+        <div class="flex flex-col space-y-1.5 mb-5">
+          <label for="password" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">{{ t('auth.passwordLabel') }}</label>
+            <div class="relative">
+            <input id="password" v-model="formData.password" type="password" :placeholder="t('auth.passwordPlaceholder')" 
+            class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 outline-none transition-all placeholder:text-gray-400"
+            :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-100': errors.password }" />
+          </div>
+          <p v-if="errors.password" class="text-xs text-red-500 ml-1">{{ errors.password }}</p>
+        </div>
+
+        <!-- 确认密码：增加折叠展开动画 -->
+        <Transition name="expand">
+          <div v-if="!isLoginMode" class="flex flex-col space-y-1.5 mb-5 overflow-hidden">
+            <label for="confirmPassword" class="text-sm font-bold text-gray-700 dark:text-gray-300 ml-1">{{ t('auth.confirmPasswordLabel') }}</label>
+            <div class="relative">
+              <input id="confirmPassword" v-model="formData.password2" type="password" :placeholder="t('auth.confirmPasswordPlaceholder')"
+              class="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-sm focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 outline-none transition-all placeholder:text-gray-400"
+              :class="{ 'border-red-500 focus:border-red-500 focus:ring-red-100': errors.confirmPassword }" />
+            </div>
+            <p v-if="errors.confirmPassword" class="text-xs text-red-500 ml-1">{{ errors.confirmPassword }}</p>
+          </div>
+        </Transition>
 
       </div>
 
-      <div class="mt-6 flex flex-col items-center">
-        <div @click="handleSubmit" :disabled="isLoading" class="flex justify-center w-full py-2.5 rounded-lg font-semibold transition-colors duration-200 
-                 text-white bg-black hover:bg-gray-900 dark:bg-white dark:hover:bg-gray-200 
-                 disabled:bg-gray-400 disabled:cursor-not-allowed">
-          <span v-if="isLoading" class="flex items-center justify-center">
-            <Loader2 :size="20" class="animate-spin mr-2" />
-            {{ t('auth.processing') }}
-          </span>
-          <span class="dark:text-black" v-else>{{ isLoginMode ? t('auth.loginNow') : t('auth.registerNow') }}</span>
-        </div>
+      <div class="mt-3 flex flex-col items-center gap-4">
+        <button @click="handleSubmit" :disabled="isLoading" 
+            class="flex justify-center items-center w-full py-3 rounded-xl font-bold transition-all duration-200 
+                  text-white bg-black active:scale-[0.98]
+                  shadow-lg shadow-blue-500/20
+                  disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100">
+          
+          <!-- 按钮文字增加过渡动画 -->
+          <Transition name="fade" mode="out-in">
+            <span v-if="isLoading" key="loading" class="flex items-center justify-center">
+              <Loader2 :size="20" class="animate-spin mr-2" />
+              {{ t('auth.processing') }}
+            </span>
+            <span v-else :key="isLoginMode ? 'login-btn' : 'register-btn'">
+              {{ isLoginMode ? t('auth.loginNow') : t('auth.registerNow') }}
+            </span>
+          </Transition>
+        </button>
 
-        <div class="mt-4 text-sm text-center">
-          <span class="text-gray-500 dark:text-gray-400">
-            {{ isLoginMode ? t('auth.noAccountQuestion') : t('auth.haveAccountQuestion') }}
-          </span>
+        <div class="text-sm text-center">
+          <!-- 底部提示文字增加过渡动画 -->
+          <Transition name="fade" mode="out-in">
+            <span :key="isLoginMode ? 'q-login' : 'q-register'" class="text-gray-500 dark:text-gray-400">
+              {{ isLoginMode ? t('auth.noAccountQuestion') : t('auth.haveAccountQuestion') }}
+            </span>
+          </Transition>
           <button type="button" @click="toggleMode"
-            class=" cursor-pointer ml-1 text-black hover:text-gray-900 dark:text-blue-400 dark:hover:text-blue-300 font-medium transition-colors">
-              {{ isLoginMode ? t('auth.goToRegister') : t('auth.goToLogin') }}
+            class="cursor-pointer ml-1 text-black dark:text-blue-400 dark:hover:text-blue-300 font-bold transition-colors">
+              <Transition name="fade" mode="out-in">
+                <span :key="isLoginMode ? 'go-reg' : 'go-log'">
+                  {{ isLoginMode ? t('auth.goToRegister') : t('auth.goToLogin') }}
+                </span>
+              </Transition>
           </button>
         </div>
       </div>
@@ -227,16 +245,47 @@ watch([() => props.visible, isLoginMode], ([newVisible]) => {
 </script>
 
 <style scoped>
-/* 继承自您 SettingsModal 的过渡样式 */
+/* 模态框本身的过渡 */
 .fade-scale-enter-active,
 .fade-scale-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .fade-scale-enter-from,
 .fade-scale-leave-to {
   opacity: 0;
-  transform: translate(0%, 0%) scale(0.3);
-  /* 调整缩放值使其更柔和 */
+  transform: scale(0.95);
+}
+
+/* 新增：输入框折叠动画 (Expand)
+  结合了 max-height 和 margin-bottom 的动画，确保布局平滑
+*/
+.expand-enter-active,
+.expand-leave-active {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  max-height: 100px; /* 设定一个足够大的值 */
+  opacity: 1;
+  margin-bottom: 1.25rem; /* 对应 mb-5 */
+}
+
+.expand-enter-from,
+.expand-leave-to {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  transform: translateY(-10px);
+}
+
+/* 新增：文字淡入淡出 (Fade)
+  用于标题和按钮文字的平滑切换
+*/
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

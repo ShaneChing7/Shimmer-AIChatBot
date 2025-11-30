@@ -1,5 +1,3 @@
-// stores/chat.ts (修复流式显示问题)
-
 import { defineStore } from "pinia";
 import {
   reqChatSessionList,
@@ -7,40 +5,30 @@ import {
   reqChatSessionDetail,
   reqDeleteSession,
   reqUpdateSessionTitle,
+  reqDeleteAllSessions,
+  reqExportAllSessions,
 } from "@/api/chat/index";
-import { toast } from 'vue-sonner'; //  引入 Toast
+import { toast } from 'vue-sonner';
 
 import type {
   ChatSession,
   ChatSessionDetailData,
-  ChatMessage,
   MessageFile,
 } from "@/api/chat/type";
 import useUserStore from "./user";
-// 引入 Model Store 获取 API Key
 import useModelStore from "@/store/modules/model"; 
 
 interface ChatState {
   sessions: ChatSession[] | null;
-  currentSession: ChatSessionDetailData | null; // 当前 UI 展示的会话
+  currentSession: ChatSessionDetailData | null;
   selectedSessionId: number | null;
-  loading: boolean; // 仅表示列表加载等全局 loading
+  loading: boolean;
   error: string | null;
-
   regeneratingMessageId: number | null;
-  
-  //  新增: 会话详情缓存 (关键：用于后台更新数据)
   sessionCache: Map<number, ChatSessionDetailData>;
-  
-  //  新增: 用于管理流中断的控制器集合 Key: sessionId
   abortControllers: Map<number, AbortController>;
-  
-  //  新增: 记录哪些会话正在生成 (用于 UI 显示 loading 状态)
   generatingSessionIds: Set<number>;
-
-  //  新增: 记录刚刚手动停止的会话 ID，用于修正后端可能返回的 completed 状态
   stoppingSessionIds: Set<number>;
-  
 }
 
 export const useChatStore = defineStore("chat", {
@@ -59,7 +47,6 @@ export const useChatStore = defineStore("chat", {
 
   getters: {
     currentMessages: (state) => state.currentSession?.messages || [],
-    // 判断当前会话是否正在生成
     isCurrentGenerating: (state) => {
       const currentId = state.currentSession?.id || state.selectedSessionId;
       return currentId ? state.generatingSessionIds.has(currentId) : false;
@@ -67,25 +54,27 @@ export const useChatStore = defineStore("chat", {
   },
 
   actions: {
-    // 判断指定会话是否正在生成
     isGenerating(sessionId: number) {
       return this.generatingSessionIds.has(sessionId);
     },
 
+    // ------------------------------------------------------------------
+    // 重构部分：普通 Axios 请求 (Fetch 会话列表、创建、详情等)
+    // 移除手动 error 设置和 Toast，保留 try-finally 管理 loading
+    // ------------------------------------------------------------------
+
     async fetchSessions() {
-      // ... existing code ...
       this.loading = true;
-      this.error = null;
+      // 仅需重置本地 error 状态，不需要处理具体的错误信息
+      this.error = null; 
       try {
         const result = await reqChatSessionList();
-        if (result.code === 200 && Array.isArray(result.data)) {
-          this.sessions = result.data;
-        } else {
-          this.error = result.message || "获取会话列表失败";
-          this.sessions = [];
-        }
+        // 直接赋值，无需判断 code === 200
+        this.sessions = Array.isArray(result.data) ? result.data : [];
       } catch (err: any) {
-        this.error = err.message || "网络请求错误";
+        // 如果需要 UI 显示“加载失败”占位符，这里可以保留
+        // 如果不需要，catch 块甚至可以留空，因为 request.ts 已经弹窗了
+        this.error = "获取会话列表失败"; 
         this.sessions = [];
       } finally {
         this.loading = false;
@@ -93,33 +82,30 @@ export const useChatStore = defineStore("chat", {
     },
 
     async createSession(title: string) {
-       // ... existing code ...
       this.loading = true;
       this.error = null;
       try {
         const result = await reqChatSessionCreate({ title });
-
-        if (result.code === 201 && result.data) {
-          const newSession = result.data;
-          // 更新缓存
-          this.sessionCache.set(newSession.id, newSession);
-          this.currentSession = newSession;
-          this.selectedSessionId = newSession.id;
-          if (this.sessions) {
-            const listSession: ChatSession = {
-              id: newSession.id,
-              title: newSession.title,
-              created_at: newSession.created_at,
-            };
-            this.sessions.unshift(listSession);
-          }
-          return true;
-        } else {
-          this.error = result.message || "创建会话失败";
+        const newSession = result?.data;
+        
+        if (!newSession) {
           return false;
         }
+        
+        this.sessionCache.set(newSession.id, newSession);
+        this.currentSession = newSession;
+        this.selectedSessionId = newSession.id;
+        if (this.sessions) {
+          const listSession: ChatSession = {
+            id: newSession.id,
+            title: newSession.title,
+            created_at: newSession.created_at,
+          };
+          this.sessions.unshift(listSession);
+        }
+        return true;
       } catch (err: any) {
-        this.error = err.message || "网络请求错误";
+        // request.ts 已处理错误提示，这里只需返回 false 告知组件
         return false;
       } finally {
         this.loading = false;
@@ -133,11 +119,8 @@ export const useChatStore = defineStore("chat", {
       this.selectedSessionId = sessionId;
       this.error = null;
 
-      // 1.  如果缓存中有，优先使用缓存 (特别是正在生成的会话，绝对不能覆盖)
       if (!forceUpdate && this.sessionCache.has(sessionId)) {
         this.currentSession = this.sessionCache.get(sessionId)!;
-        
-        // 如果正在生成，直接返回，不再请求接口，以免打断前端状态
         if (this.generatingSessionIds.has(sessionId)) {
             return true;
         }
@@ -146,13 +129,11 @@ export const useChatStore = defineStore("chat", {
       this.loading = true;
       try {
         const result = await reqChatSessionDetail(sessionId);
-
-        if (result.code === 200 && result.data) {
-          
-          //  修复：如果该会话刚刚被手动停止，强制将最后一条 AI 消息状态设为 interrupted
-          // 這是為了防止后端因为 buffering 等原因误判为 completed，导致前端“继续”按钮消失
-          if (this.stoppingSessionIds.has(sessionId)) {
-             const msgs = result.data.messages;
+        
+        // 逻辑处理
+        const data = result?.data;
+        if (this.stoppingSessionIds.has(sessionId) && data?.messages) {
+             const msgs = data.messages;
              if (msgs.length > 0) {
                  const lastMsg = msgs[msgs.length - 1];
                  if (lastMsg?.sender === 'ai' && lastMsg.status === 'completed') {
@@ -160,19 +141,17 @@ export const useChatStore = defineStore("chat", {
                  }
              }
              this.stoppingSessionIds.delete(sessionId);
-          }
+        }
 
-          // 更新缓存
-          this.sessionCache.set(sessionId, result.data);
-          this.currentSession = result.data;
+        if (data) {
+          this.sessionCache.set(sessionId, data);
+          this.currentSession = data;
           return true;
         } else {
-          this.error = result.message || "获取会话详情失败";
           this.currentSession = null;
           return false;
         }
       } catch (err: any) {
-        this.error = err.message || "网络请求错误";
         this.currentSession = null;
         return false;
       } finally {
@@ -180,43 +159,114 @@ export const useChatStore = defineStore("chat", {
       }
     },
 
-    
+    async deleteSession(sessionId: number) {
+      this.loading = true;
+      try {
+        await reqDeleteSession(sessionId); // 若出错会抛出异常跳到 catch
 
-    /**
-     * 发送消息 (支持文件上传)
-     * @param content 文本内容
-     * @param model 模型名称
-     * @param files 文件数组
-     */
+        this.sessions = this.sessions?.filter((s) => s.id !== sessionId) || null;
+        if (this.currentSession?.id === sessionId) {
+          this.currentSession = null;
+        }
+        return true;
+      } catch (err: any) {
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async updateSessionTitle(sessionId: number, newTitle: string) {
+      this.loading = true;
+      try {
+        const result = await reqUpdateSessionTitle(sessionId, { title: newTitle });
+        const updatedSession = result.data;
+
+        // Guard against undefined response data
+        if (!updatedSession) {
+          return false;
+        }
+
+        if (this.sessions) {
+          const index = this.sessions.findIndex((s) => s.id === sessionId);
+          if (index !== -1 && this.sessions[index]) {
+            this.sessions[index].title = updatedSession.title;
+          }
+        }
+
+        if (this.currentSession?.id === sessionId) {
+          this.currentSession.title = updatedSession.title;
+        }
+        return true;
+      } catch (err: any) {
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // --- 新增: 删除所有会话 ---
+    async deleteAllSessions() {
+      this.loading = true;
+      try {
+        await reqDeleteAllSessions();
+        // 清空本地状态
+        this.sessions = [];
+        this.currentSession = null;
+        this.sessionCache.clear();
+        this.selectedSessionId = null;
+        return true;
+      } catch (error) {
+        return false;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    // --- 新增: 导出所有数据 ---
+    async exportAllData() {
+        this.loading = true;
+        try {
+            const result = await reqExportAllSessions();
+            return result.data || [];
+        } catch (error) {
+            return null;
+        } finally {
+            this.loading = false;
+        }
+    },
+
+
+    // ------------------------------------------------------------------
+    // 注意：下面的 sendMessage 和 continueGenerate 使用了原生 fetch
+    // 它们不受 request.ts 拦截器控制，所以这里的错误处理需要保留
+    // ------------------------------------------------------------------
+
     async sendMessage(content: string, model: string = 'deepseek-chat', files?: File[]) {
-       // ... existing code ...
       if (!this.currentSession?.id) {
-        this.error = "请先选择或创建一个会话。";
+        toast.error("请先选择或创建一个会话。"); // 这里仍需手动提示
         return;
       }
 
       const sessionId = this.currentSession.id;
 
-      // ... existing code ...
       const tempFiles: MessageFile[] = [];
       if (files && files.length > 0) {
         files.forEach((f, index) => {
           tempFiles.push({
-            id: -1 - index, // 临时 ID
+            id: -1 - index, 
             file_url: URL.createObjectURL(f),
-            file_name: f.name, // 保存文件名
-            file_type: f.type  // 保存文件类型 (例如 'image/png', 'application/pdf')
+            file_name: f.name, 
+            file_type: f.type  
           });
         });
       }
       
-      // 确保 session 在缓存中
       if (!this.sessionCache.has(sessionId)) {
         this.sessionCache.set(sessionId, this.currentSession);
       }
       const cachedSession = this.sessionCache.get(sessionId)!;
 
-      // 添加用户消息
       cachedSession.messages.push({
         id: Date.now() * -1,
         session: sessionId,
@@ -228,7 +278,6 @@ export const useChatStore = defineStore("chat", {
         status: 'completed',
       });
 
-      // AI 占位消息
       const tempId = (Date.now() * -1) - 1;
       cachedSession.messages.push({
         id: tempId,
@@ -238,30 +287,22 @@ export const useChatStore = defineStore("chat", {
         content_type: "markdown",
         created_at: new Date().toISOString(),
         reasoning_content: "",
-        status: 'generating', // 初始状态为生成中
+        status: 'generating', 
       });
 
-      //  标记正在生成
       this.generatingSessionIds.add(sessionId);
-
-      //  创建中断控制器
       const controller = new AbortController();
       this.abortControllers.set(sessionId, controller);
 
-      // 调用流式 API
       try {
         const apiUrl = `/api/sessions/${sessionId}/messages-stream/`;
-        // 构建 FormData 
-        // 使用 FormData，以支持文件传输
         const formData = new FormData();
         formData.append('model', model);
-        // 即使 content 为空字符串也传过去，后端做了 .get('content') 处理
         formData.append('content', content);
 
-        // 循环追加文件
         if (files && files.length > 0) {
           files.forEach(file => {
-            formData.append('files', file); // 后端使用 request.FILES.getlist('files')
+            formData.append('files', file); 
           });
         }
 
@@ -270,20 +311,16 @@ export const useChatStore = defineStore("chat", {
         if (token) {
           headers["Authorization"] = `Bearer ${token}`;
         }
-
-        // 将 API Key 添加到请求头
         const modelStore = useModelStore();
         if (modelStore.apiKey) {
           headers["X-DeepSeek-API-Key"] = modelStore.apiKey;
         }
 
-        // 使用 FormData 时，不要手动设置 Content-Type 为 application/json 或 multipart/form-data
-        // 浏览器会自动设置正确的 Content-Type 和 boundary
         const response = await fetch(apiUrl, {
           method: "POST",
           headers: headers,
-          body: formData, // 直接传递 formData
-          signal: controller.signal, //  绑定信号
+          body: formData, 
+          signal: controller.signal, 
         });
 
         if (!response.ok || !response.body) {
@@ -296,12 +333,11 @@ export const useChatStore = defineStore("chat", {
           const errorText = await response.text();
           throw new Error(`网络错误: ${response.status} ${errorText}`);
         }
-        // 调用通用的流处理函数
         await this.processStreamResponse(response, sessionId, tempId, false);
 
       } catch (err: any) {
         if (err.name === 'AbortError') {
-           // 用户手动停止，不视为错误
+           // ignore
         } else {
            const idx = cachedSession.messages.findIndex(m => m.id === tempId);
            if (idx !== -1) {
@@ -313,72 +349,54 @@ export const useChatStore = defineStore("chat", {
       } finally {
         this.generatingSessionIds.delete(sessionId);
         this.abortControllers.delete(sessionId);
-        // 释放 URL
         tempFiles.forEach(f => URL.revokeObjectURL(f.file_url));
       }
     },
     
-    // 停止生成
     stopGenerate(sessionId: number) {
       const controller = this.abortControllers.get(sessionId);
       if (controller) {
-        controller.abort(); // 中断 fetch 请求
+        controller.abort(); 
         this.abortControllers.delete(sessionId);
       }
       this.generatingSessionIds.delete(sessionId);
       
-      //  标记此会话为手动停止，以便在 refresh 时修正状态
       this.stoppingSessionIds.add(sessionId);
 
-      //  停止时也要重置状态
       if (this.currentSession?.id === sessionId) {
           this.regeneratingMessageId = null; 
       }
       
-      //  修复 Issue 2 & 4: 停止后，等待一小段时间让后端完成保存，然后刷新会话
       setTimeout(() => {
-        this.fetchSessionDetail(sessionId, true); // true = 强制刷新
+        this.fetchSessionDetail(sessionId, true); 
       }, 500); 
     },
 
-    //  继续生成 (追加模式)
     async continueGenerate(sessionId: number, model: string = 'deepseek-chat') {
-      if (!sessionId) {
-          console.error("continueGenerate: sessionId is missing");
-          return;
-      }
+      if (!sessionId) return;
       const session = this.sessionCache.get(sessionId);
-      if (!session || session.messages.length === 0) {
-          console.warn("continueGenerate: Session cache missing or empty");
-          return;
-      }
+      if (!session || session.messages.length === 0) return;
 
       const lastMessage = session.messages[session.messages.length - 1];
-      if (lastMessage?.sender !== 'ai') return; // 只能继续 AI 的消息
+      if (lastMessage?.sender !== 'ai') return; 
 
-      //  修复 Issue 4: 如果 ID 还是负数，说明没有同步，无法继续
       if (lastMessage.id < 0) {
           toast.warning("正在同步消息状态，请稍后再试...");
-          // 尝试重新同步
           await this.fetchSessionDetail(sessionId, true);
           return;
       }
 
       this.generatingSessionIds.add(sessionId);
-      //  设置 regeneratingMessageId，以便 UI 显示光标
       this.regeneratingMessageId = lastMessage.id;
-      // 创建中断控制器
       const controller = new AbortController();
       this.abortControllers.set(sessionId, controller);
 
       try {
-        // ... existing code ...
         const apiUrl = `/api/sessions/${sessionId}/regenerate/`;
         const headers: HeadersInit = { "Content-Type": "application/json" };
         const token = localStorage.getItem('TOKEN');
         if (token) headers["Authorization"] = `Bearer ${token}`;
         
-        // 将 API Key 添加到请求头
         const modelStore = useModelStore();
         if (modelStore.apiKey) {
           (headers as any)["X-DeepSeek-API-Key"] = modelStore.apiKey;
@@ -391,8 +409,8 @@ export const useChatStore = defineStore("chat", {
             message_id: lastMessage.id, 
             model,
             type:'continue' 
-          }), // 告诉后端针对哪条消息
-          signal: controller.signal, //  绑定信号
+          }), 
+          signal: controller.signal, 
         });
 
         if (!response.ok){
@@ -405,7 +423,7 @@ export const useChatStore = defineStore("chat", {
           throw new Error("Net Error");
         } 
 
-        await this.processStreamResponse(response, sessionId, lastMessage.id, true); // true = append mode
+        await this.processStreamResponse(response, sessionId, lastMessage.id, true);
 
       } catch (err: any) {
         if (err.name === 'AbortError') {
@@ -416,43 +434,36 @@ export const useChatStore = defineStore("chat", {
       } finally {
         this.generatingSessionIds.delete(sessionId);
         this.abortControllers.delete(sessionId);
-        //  重置状态
         this.regeneratingMessageId = null;
       }
     },
 
     async regenerateMessage(messageId: number, model: string = 'deepseek-chat') {
-        // 逻辑类似 sendMessage，但需要先清空内容
         if (!this.currentSession?.id) return;
         const sessionId = this.currentSession.id;
         
-        // 确保使用缓存中的 Session，防止切换后引用丢失
         const session = this.sessionCache.get(sessionId);
         if (!session) return;
 
         const msgIndex = session.messages.findIndex(m => m.id === messageId);
         if (msgIndex === -1) return;
         
-        // 清空
         if(!session.messages[msgIndex]) return;
         session.messages[msgIndex].content = "";
         session.messages[msgIndex].reasoning_content = "";
-        session.messages[msgIndex].status = "generating"; // 设置状态
+        session.messages[msgIndex].status = "generating"; 
 
         this.generatingSessionIds.add(sessionId);
-        //  设置 regeneratingMessageId
         this.regeneratingMessageId = messageId;
 
         const controller = new AbortController();
         this.abortControllers.set(sessionId, controller);
 
         try {
-            // 构造 Headers
             const headers: HeadersInit = { 
                 "Content-Type": "application/json",
                 "Authorization": `Bearer ${localStorage.getItem('TOKEN')}`
             };
-            // 将 API Key 添加到请求头
             const modelStore = useModelStore();
             if (modelStore.apiKey) {
               (headers as any)["X-DeepSeek-API-Key"] = modelStore.apiKey;
@@ -482,18 +493,15 @@ export const useChatStore = defineStore("chat", {
         } finally {
             this.generatingSessionIds.delete(sessionId);
             this.abortControllers.delete(sessionId);
-            //  重置状态
             this.regeneratingMessageId = null;
         }
     },
 
-     // 通用流处理函数 (关键：支持追加模式)
     async processStreamResponse(response: Response, sessionId: number, targetMessageId: number, appendMode: boolean) {
         const reader = response.body!.getReader();
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
 
-        // 标记是否收到过任何有效数据，用于处理空响应情况
         let hasReceivedData = false;
 
         try {
@@ -522,18 +530,15 @@ export const useChatStore = defineStore("chat", {
                           if (msgIndex === -1) continue;
                           const targetMsg = session.messages[msgIndex];
 
-                          // ✅ 1. 处理错误事件 (核心修复)
                           if (data.event === 'error') {
                               console.error("Stream Error Event:", data.detail);
                               if (!targetMsg) continue;
                               targetMsg.content += `\n\n> ⚠️ **API Error**: ${data.detail}\n`;
                               targetMsg.status = 'completed'; 
                               toast.error(`API Error: ${data.detail}`);
-                              // 收到错误后直接中断循环
                               return; 
                           }
 
-                          // ✅ 2. 处理完成事件
                           else if (data.event === 'done') {
                               if (appendMode) {
                                   if (targetMsg) {
@@ -543,12 +548,10 @@ export const useChatStore = defineStore("chat", {
                                       }
                                   }
                               } else {
-                                  // 替换模式下，更新完整对象
                                   session.messages.splice(msgIndex, 1, { ...data.message, reasoning_content: data.reasoning || "" });
                               }
                           } 
                           
-                          // ✅ 3. 处理普通内容
                           else if (data.type === 'reasoning') {
                               if (targetMsg) {
                                   if (!targetMsg.reasoning_content) targetMsg.reasoning_content = "";
@@ -560,12 +563,9 @@ export const useChatStore = defineStore("chat", {
                               }
                           }
                       } catch (e) {
-                          // 解析单行 JSON 失败，通常忽略，但也可能是非 SSE 格式的报错信息
                           console.warn("JSON Parse Error on line:", line);
                       }
                   } 
-                  // ✅ 4. 边缘情况：如果后端返回了 raw json (非 data: 开头)，尝试解析是否有 error 字段
-                  // 这种情况通常发生在 Django 没有正确 wrap StreamingHttpResponse，直接返回了 JsonResponse
                   else if (line.startsWith('{') && line.endsWith('}')) {
                       try {
                          const jsonObj = JSON.parse(line);
@@ -591,22 +591,19 @@ export const useChatStore = defineStore("chat", {
           }
         } catch (error: any) {
            console.error("Stream reading error:", error);
-           throw error; // 抛出给外层 catch 处理
+           throw error; 
         } finally {
-            // 如果整个流结束了，但消息状态还是 generating，且没有收到数据 (Empty Response)
-            // 这种情况通常意味着后端 crash 了或者连不上
             const session = this.sessionCache.get(sessionId);
             if (session) {
                 const msgIndex = session.messages.findIndex(m => m.id === targetMessageId);
                 if (msgIndex !== -1) {
                     const msg = session.messages[msgIndex];
                     if (msg?.status === 'generating') {
-                         // 如果已经有内容了，算 completed/interrupted，如果没有内容，算 error
                          if (!msg.content && !msg.reasoning_content) {
                              msg.status = 'error';
                              msg.content = "**[Connection Closed Without Response]**";
                          } else {
-                             msg.status = 'completed'; // 兜底
+                             msg.status = 'completed'; 
                          }
                     }
                 }
@@ -622,60 +619,6 @@ export const useChatStore = defineStore("chat", {
       this.sessionCache.clear();
       this.sessions = null;
       this.currentSession = null;
-    },
-
-    async deleteSession(sessionId: number) {
-      this.loading = true;
-      try {
-        const result = await reqDeleteSession(sessionId);
-
-        if (result.code === 200 || result.code === 204) {
-          this.sessions = this.sessions?.filter((s) => s.id !== sessionId) || null;
-          if (this.currentSession?.id === sessionId) {
-            this.currentSession = null;
-          }
-          return true;
-        } else {
-          this.error = result.message || "删除会话失败";
-          return false;
-        }
-      } catch (err: any) {
-        this.error = err.message || "网络请求错误";
-        return false;
-      } finally {
-        this.loading = false;
-      }
-    },
-
-    async updateSessionTitle(sessionId: number, newTitle: string) {
-      this.loading = true;
-      try {
-        const result = await reqUpdateSessionTitle(sessionId, { title: newTitle });
-
-        if (result.code === 200 && result.data) {
-          const updatedSession = result.data;
-
-          if (this.sessions) {
-            const index = this.sessions.findIndex((s) => s.id === sessionId);
-            if (index !== -1 && this.sessions[index]) {
-              this.sessions[index].title = updatedSession.title;
-            }
-          }
-
-          if (this.currentSession?.id === sessionId) {
-            this.currentSession.title = updatedSession.title;
-          }
-          return true;
-        } else {
-          this.error = result.message || "修改标题失败";
-          return false;
-        }
-      } catch (err: any) {
-        this.error = err.message || "网络请求错误";
-        return false;
-      } finally {
-        this.loading = false;
-      }
     },
   },
 });

@@ -102,3 +102,6 @@ export interface ChatMessageCreateData {
 
 // 发送消息接口返回数据 (后端返回的是 AI 的回复消息)
 export type ChatMessageCreateResponseData = ResponseData<ChatMessage>
+
+// 导出所有数据返回类型 (列表)
+export type ChatSessionExportResponseData = ResponseData<ChatSessionDetailData[]>

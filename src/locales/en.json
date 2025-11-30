@@ -2,6 +2,9 @@
   "common": {
     "ok": "OK",
     "cancel": "Cancel",
+    "delete":"Delete",
+    "confirm":"Confirm",
+    "refresh": "Refresh",
     "submit": "Submit",
     "loading": "Loading...",
     "save": "Save",
@@ -160,28 +163,35 @@
       "desc": "Configure your DeepSeek API key. Your key is stored locally.",
       "getKey": "Get API Key",
       "keySaved": "API Key saved locally",
-      "usage": "Usage & Balance",
+      "usage": "Balance",
       "balance": "Balance",
-      "tokens": "Token Usage",
+      "tokenBalance": "Token Balance",
+      "estimatedAvailable": "Estimated available",
       "usageRefreshed": "Usage statistics updated",
-      "sinceLastReset":"Since last reset",
       "balanceRefreshed":"Balance refreshed successfully",
       "apiExpired":"Query failed: Invalid or expired API key"
     },
     "data": {
       "storage": "Storage",
-      "localCache": "Local Cache",
-      "used": "Used",
-      "clear": "Clear",
+
+      "deleteAllChats": "Delete All Chats",
+      "deleteAllChatsDesc": "Permanently delete all chat history and clear local cache",
+      "deleteAllChatsConfirm": "Are you sure you want to delete all chat history? This action cannot be undone.",
+      "chatsDeleted": "All chats deleted successfully",
+
+
       "export": "Export Data",
-      "exportDesc": "Download all your chat history",
+      "exportDesc": "Download all your chat history (JSON format)",
       "exportBtn": "Export JSON",
+      "exportSuccess": "Data exported successfully",
+
+
       "dangerZone": "Danger Zone",
       "deleteAccount": "Delete Account",
-      "deleteAccountDesc": "Permanently delete your account and data",
-      "deleteBtn": "Delete",
-      "deleteWarning": "This action cannot be undone. This will permanently delete your account and remove your data from our servers. Type 'DELETE' to confirm.",
-      "deleteConfirm":"Type 'DELETE' to confirm",
+      "deleteAccountDesc": "Permanently delete your account and all cloud data",
+      "deleteBtn": "Delete", 
+      "deleteWarning": "This action cannot be undone. This will permanently delete your account and remove your data from our servers.",
+      "deleteConfirm": "Type \"DELETE\" to confirm",
       "deleteSuccess": "Account deleted successfully. Goodbye.",
       "deleteFailed": "Failed to delete account"
     },

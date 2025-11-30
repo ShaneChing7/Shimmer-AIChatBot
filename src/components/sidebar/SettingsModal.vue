@@ -174,46 +174,9 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Data Tab -->
-                        <div v-else-if="activeTab === 'data'" class="animate-fade-in space-y-6">
-                            <div class="space-y-2">
-                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">{{ t('settings.data.storage') }}</span>
-                                <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-                                    <div class="p-4 flex items-center justify-between bg-white dark:bg-gray-800/30">
-                                        <div class="flex items-center gap-3">
-                                            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
-                                                <DatabaseZap :size="18" class="text-gray-600 dark:text-gray-300"/>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium">{{ t('settings.data.localCache') }}</div>
-                                                <div class="text-xs text-gray-500">{{ t('settings.data.used') }}: 24.5 MB</div>
-                                            </div>
-                                        </div>
-                                        <button class="px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                            {{ t('settings.data.clear') }}
-                                        </button>
-                                    </div>
-                                    <div class="h-[1px] bg-gray-100 dark:bg-gray-700 w-full"></div>
-                                    <div class="p-4 flex items-center justify-between bg-white dark:bg-gray-800/30">
-                                        <div class="flex items-center gap-3">
-                                            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
-                                                <Download :size="18" class="text-gray-600 dark:text-gray-300"/>
-                                            </div>
-                                            <div>
-                                                <div class="text-sm font-medium">{{ t('settings.data.export') }}</div>
-                                                <div class="text-xs text-gray-500">{{ t('settings.data.exportDesc') }}</div>
-                                            </div>
-                                        </div>
-                                        <button class="px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                                            {{ t('settings.data.exportBtn') }}
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2 pt-2">
+                            <!-- Danger Zone (Moved Here) -->
+                            <div class="space-y-2 pt-6">
                                 <span class="text-xs font-semibold text-red-400 dark:text-red-500 uppercase tracking-wider ml-1">{{ t('settings.data.dangerZone') }}</span>
                                 <div class="border border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10 rounded-xl p-4 flex items-center justify-between">
                                     <div class="flex items-center gap-3">
@@ -232,6 +195,56 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Data Tab -->
+                        <div v-else-if="activeTab === 'data'" class="animate-fade-in space-y-6">
+                            <div class="space-y-2">
+                                <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1">{{ t('settings.data.storage') }}</span>
+                                <div class="border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                                    
+                                    <!-- Export Data -->
+                                    <div class="p-4 flex items-center justify-between bg-white dark:bg-gray-800/30">
+                                        <div class="flex items-center gap-3">
+                                            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
+                                                <Download :size="18" class="text-gray-600 dark:text-gray-300"/>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium">{{ t('settings.data.export') }}</div>
+                                                <div class="text-xs text-gray-500">{{ t('settings.data.exportDesc') }}</div>
+                                            </div>
+                                        </div>
+                                        <button @click="handleExportData" :disabled="isExporting"
+                                            class="px-3 py-1.5 text-xs font-medium border border-gray-200 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center gap-1">
+                                            <RefreshCw v-if="isExporting" :size="12" class="animate-spin"/>
+                                            {{ t('settings.data.exportBtn') }}
+                                        </button>
+                                    </div>
+
+                                    <div class="h-[1px] bg-gray-100 dark:bg-gray-700 w-full"></div>
+                                    
+                                    
+
+                                    <!-- Modified: Local Cache -> Delete All Chats -->
+                                    <div class="p-4 flex items-center justify-between bg-white dark:bg-gray-800/30">
+                                        <div class="flex items-center gap-3">
+                                            <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
+                                                <Trash2 :size="18" class="text-gray-600 dark:text-gray-300"/>
+                                            </div>
+                                            <div>
+                                                <div class="text-sm font-medium">{{ t('settings.data.deleteAllChats') || 'Delete All Chats' }}</div>
+                                                <div class="text-xs text-gray-500">{{ t('settings.data.deleteAllChatsDesc') || 'Permanently delete all chat history' }}</div>
+                                            </div>
+                                        </div>
+                                        <button @click="openDeleteChatsModal"
+                                            class="px-3 py-1.5 text-xs font-medium bg-white dark:bg-transparent border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors">
+                                            {{ t('common.delete') || 'Delete' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Danger Zone Removed from here and moved to Account Tab -->
                         </div>
 
                         <!-- Model Tab (Replaces Data Tab) -->
@@ -298,24 +311,21 @@
                                     <!-- Balance Card -->
                                     <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
                                         <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">{{ t('settings.model.balance') || 'Balance' }}</span>
-                                        <div class="flex items-baseline gap-1">
+                                        <div class="flex items-baseline gap-1 mt-2.5">
                                             <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ deepSeekBalance }}</span>
                                             <span class="text-xs text-gray-500">CNY</span>
                                         </div>
-                                        <div class="mt-2 w-full bg-gray-200 dark:bg-gray-700 h-1.5 rounded-full overflow-hidden">
-                                            <div class="bg-emerald-500 h-full rounded-full" style="width: 60%"></div>
-                                        </div>
                                     </div>
 
-                                    <!-- Token Usage Card -->
+                                    <!-- Token Balance Card -->
                                     <div class="p-4 rounded-xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 flex flex-col gap-1">
-                                        <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">{{ t('settings.model.tokens') || 'Token Usage' }}</span>
+                                        <span class="text-xs text-gray-500 font-medium uppercase tracking-wider">{{ t('settings.model.tokenBalance') || 'Token Balacne' }}</span>
                                         <div class="flex items-baseline gap-1">
                                             <span class="text-2xl font-bold text-gray-900 dark:text-white">{{ estimatedTokens }}</span>
                                             <span class="text-xs text-gray-500">Tokens</span>
                                         </div>
                                         <div class="mt-2 text-[10px] text-gray-400">
-                                            {{t('settings.model.sinceLastReset') || 'Since last reset'}}
+                                            {{t('settings.model.estimatedAvailable') || 'Estimated available'}}
                                         </div>
                                     </div>
                                 </div>
@@ -416,6 +426,35 @@
                         </div>
                     </div>
 
+                     <!-- NEW: Delete All Chats Confirmation Modal -->
+                    <div v-if="showDeleteChatsModal" class="absolute inset-0 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
+                        <div class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 relative">
+                            <div class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="closeDeleteChatsModal">
+                                <X :size="18" class="text-gray-400" />
+                            </div>
+                            <div class="flex flex-col items-center text-center mb-6">
+                                <div class="w-12 h-12 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mb-3">
+                                    <Trash2 class="text-gray-600 dark:text-gray-300" :size="24" />
+                                </div>
+                                <h3 class="text-lg font-bold text-gray-900 dark:text-white">{{ t('settings.data.deleteAllChats') || 'Clear All Chats' }}</h3>
+                                <p class="text-xs text-gray-500 mt-2 leading-relaxed">
+                                    {{ t('settings.data.deleteAllChatsConfirm') || 'Are you sure you want to delete all chat history? This action cannot be undone.' }}
+                                </p>
+                            </div>
+                            
+                            <div class="flex gap-3">
+                                <button @click="closeDeleteChatsModal" class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
+                                    {{ t('common.cancel') || 'Cancel' }}
+                                </button>
+                                <button @click="confirmDeleteAllChats" :disabled="isDeletingChats" 
+                                    class="flex-1 px-4 py-2.5 rounded-xl text-sm font-medium bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:opacity-90 transition-opacity flex justify-center items-center">
+                                    <span v-if="isDeletingChats" class="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
+                                    {{ t('common.confirm') || 'Confirm' }}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -429,7 +468,7 @@ import { defineProps, defineEmits } from 'vue';
 import { 
     Settings, User, Database, FileText, X, Sun, Moon, Monitor, 
     ChevronDown, Check, LogOut, KeyRound, UserPen, ChevronRight,
-    Camera, DatabaseZap, Download, ShieldAlert,
+    Camera, DatabaseZap, Download, ShieldAlert, Trash2,
     BrainCircuit, RefreshCw, Eye, EyeOff, Bot, ExternalLink // Added Icons
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
@@ -513,6 +552,7 @@ const activeTab = ref('general');
 watch(activeTab, () => {
     closePasswordModal();
     closeDeleteAccountModal();
+    closeDeleteChatsModal();
 });
 
 
@@ -538,6 +578,7 @@ const close = () => {
     // 重置状态
     closePasswordModal();
     closeDeleteAccountModal();
+    closeDeleteChatsModal();
 };
 
 // -------------------- 业务逻辑：上传头像 --------------------
@@ -677,6 +718,71 @@ const submitDeleteAccount = async () => {
         isDeleteLoading.value = false;
     }
 };
+
+// -------------------- 业务逻辑：删除所有对话 (新增) --------------------
+const showDeleteChatsModal = ref(false);
+const isDeletingChats = ref(false);
+
+const openDeleteChatsModal = () => {
+    showDeleteChatsModal.value = true;
+};
+
+const closeDeleteChatsModal = () => {
+    showDeleteChatsModal.value = false;
+};
+
+const confirmDeleteAllChats = async () => {
+    try {
+        isDeletingChats.value = true;
+        await chatStore.deleteAllSessions();
+        toast.success(t('settings.data.chatsDeleted') || 'All chats deleted successfully');
+        closeDeleteChatsModal();
+    } catch (error: any) {
+        toast.error('Failed to delete chats');
+    } finally {
+        isDeletingChats.value = false;
+    }
+};
+
+// -------------------- 业务逻辑：导出所有数据 (新增) --------------------
+const isExporting = ref(false);
+
+const handleExportData = async () => {
+    if (isExporting.value) return;
+    
+    try {
+        isExporting.value = true;
+        const data = await chatStore.exportAllData();
+        
+        if (!data) {
+             toast.error('Failed to export data');
+             return;
+        }
+
+        // 创建 JSON 文件并下载
+        const jsonString = JSON.stringify(data, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        const timestamp = dayjs().format('YYYYMMDD_HHmmss');
+        a.download = `chat_history_export_${timestamp}.json`;
+        document.body.appendChild(a);
+        a.click();
+        
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        toast.success(t('settings.data.exportSuccess') || 'Data exported successfully');
+        
+    } catch (error) {
+        toast.error('Export failed');
+    } finally {
+        isExporting.value = false;
+    }
+};
+
 
 // -------------------- 业务逻辑：登出 --------------------
 const handleLogout = async () => {
