@@ -1,172 +1,146 @@
-Shimmer | AI Chat Web
+<div align="center"> <img src="./public/logo.svg" alt="Shimmer AI ChatBot Logo" width="120" height="120" /> </div>
 
-<div align="center">
+<h1 align="center">Shimmer AI ChatBot</h1>
 
-一个基于 Vue 3 + TypeScript + TailwindCSS 构建的现代化 AI 对话客户端
+<p align="center"> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Vue.js-3.x-4FC08D%3Fstyle%3Dflat-square%26logo%3Dvue.js" alt="Vue 3" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/TypeScript-Ready-3178C6%3Fstyle%3Dflat-square%26logo%3Dtypescript" alt="TypeScript" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Vite-Fast-646CFF%3Fstyle%3Dflat-square%26logo%3Dvite" alt="Vite" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/DeepSeek-Integration-blue%3Fstyle%3Dflat-square" alt="DeepSeek" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/License-MIT-yellow%3Fstyle%3Dflat-square" alt="License" /> </a> </p>
 
-特性 • 技术栈 • 目录结构 • 快速开始 • 部署
-
-</div>
-
-📖 项目简介
-
-这是一个功能强大的 AI 聊天 Web 应用，旨在提供流畅、类似原生应用的对话体验。前端采用 Vue 3 生态系统构建，UI 风格简洁现代。
-
-项目深度集成 DeepSeek API，支持最新的推理模型（Reasoner），能够直观展示模型的思考过程。它支持多轮对话、流式响应、文件/图片上传分析等高级功能，并采用虚拟滚动技术优化长列表性能。后端对接 Django 服务（前后端分离架构）。
-
-✨ 功能特性
-
-🤖 DeepSeek 深度集成：完美支持 DeepSeek 系列模型，包括 reasoning (思考过程) 的可视化展示。
-
-🌊 实时流式响应：基于 Server-Sent Events (SSE) 实现打字机效果，响应迅速流畅。
-
-💬 多轮会话管理：支持创建多个会话窗口，自动保存上下文，随时切换。
-
-⏯️ 灵活控制：支持生成过程中的暂停与继续，完全掌控对话节奏。
-
-📝 Markdown 渲染：完美渲染代码块、公式、表格及富文本格式。
-
-📁 多媒体支持：支持文件和图片的上传。
-
-⚡ 极致性能：采用 vue-virtual-scroller 实现消息列表的虚拟滚动，海量消息也能丝滑流畅。
-
-🔐 隐私安全：用户自定义 API Key，密钥仅存储在本地浏览器（LocalStorage），不经由服务器中转。
-
-🌍 国际化 (i18n)：内置多语言支持，轻松切换界面语言。
-
-🛠️ 健壮的工程化：
-
-封装 Axios 拦截器，统一处理请求与响应逻辑。
-
-完善的 TypeScript 类型定义。
-
-模块化的 Pinia 状态管理。
-
-🛠 技术栈
-
-前端 (Frontend)
-
-核心框架: Vue 3 (Composition API)
-
-构建工具: Vite
-
-语言: TypeScript
-
-UI 框架: Shadcn-Vue (基于 Radix Vue)
-
-样式: Tailwind CSS
-
-状态管理: Pinia
-
-路由: Vue Router
-
-国际化: Vue I18n
-
-HTTP 客户端: Axios
-
-性能优化: Vue Virtual Scroller
-
-后端 (Backend)
-
-框架: Django (REST Framework)
-
-注：本项目为前端仓库，需要配合 Django 后端服务运行。
-
-📂 目录结构
-
-src
-├── api/                  # API 接口请求定义
-├── assets/               # 静态资源文件
-├── components/           # 公共组件
-│   ├── ai-elements/      # AI 相关特定组件 
-│   ├── chatArea/         # 聊天主区域组件
-│   ├── sidebar/          # 侧边栏组件
-│   ├── ui/               # Shadcn UI 基础组件
-│   └── i18n/             # 国际化组件
-├── lib/                  # 工具库 (utils 别名或特定库封装)
-├── locales/              # 国际化语言包资源
-├── router/               # 路由配置
-├── store/                # Pinia 状态管理
-│   ├── modules/
-│   │   ├── chat.ts       # 会话状态
-│   │   ├── model.ts      # 模型配置状态
-│   │   ├── setting.ts    # 全局设置
-│   │   └── user.ts       # 用户信息
-│   └── index.ts
-├── style/                # 全局样式
-├── utils/                # 通用工具函数
-├── views/                # 页面视图
-│   ├── 404/
-│   └── ChatView/         # 核心聊天页面
-├── App.vue               # 根组件
-├── main.ts               # 入口文件
-└── permission.ts         # 权限控制/路由守卫
+<p align="center"> 一个基于 Vue 3 + TypeScript + Django 构建的现代化 AI 对话应用。
 
 
-🚀 快速开始
 
-环境要求
+集成 DeepSeek API，支持流式响应、多轮对话及思维链（CoT）展示，旨在提供流畅、智能的交互体验。 </p>
 
-Node.js >= 18
+<div align="center"> <img src="./docs/images/index.png" alt="Project Screenshot" width="100%" /> </div>
 
-pnpm >= 8
+## 📖 简介 | Introduction
 
-1. 克隆项目
+**Shimmer AIChatBot** 是一个前后端分离的 AI 聊天项目。前端采用最新的 Vue 3 生态系统构建，UI 风格简洁现代；后端基于 Django 开发。
 
-git clone [https://github.com/ShaneChing7/Shimmer-AIChatBot](https://github.com/ShaneChing7/Shimmer-AIChatBot)
-cd your-repo-name
+本项目专注于解决大模型对话中的用户体验痛点，实现了诸如**消息虚拟滚动**（优化长列表性能）、**思维链展示**（透视模型推理过程）以及**流式打字机效果**等高级功能。
 
+## 🚀 核心功能 | Features
 
-2. 安装依赖
+### 🤖 深度 AI 集成与推理可视化
 
+- **DeepSeek API 集成**：原生支持 DeepSeek 系列模型。
+- **思考过程展示 (Reasoner)**：可视化展示 AI 的 "思考/推理" 过程，支持折叠/展开，透视大模型的思维链 (Chain of Thought)。
+- **流式响应 (Streaming)**：通过 SSE 实现实时的打字机输出效果。
+
+<div align="center"> <img src="./docs/images/reasoning.png" alt="Reasoning Process" width="80%" /> <p><i>DeepSeek 模型推理过程展示</i></p> </div>
+
+### ⚡ 极致交互与 Markdown 渲染
+
+- **Markdown 完美渲染**：支持代码高亮、数学公式 (LaTeX)、表格及各种复杂 Markdown 语法。
+- **虚拟滚动**：基于 `vue-virtual-scroller`，即使数千条消息也能保持页面丝滑。
+- **智能滚动控制**：新消息自动跟随底部，查看历史时自动暂停。
+
+<div align="center"> <img src="./docs/images/markdown.png" alt="Markdown Rendering" width="80%" /> <p><i>丰富的 Markdown 渲染支持</i></p> </div>
+
+### 🛠️ 多模态交互与文件支持
+
+- **文件与图片上传**：支持用户上传附件，实现多模态交互体验。
+- **统一 API 管理**：封装 Axios 拦截器，统一处理请求与响应逻辑。
+
+<div align="center"> <img src="./docs/images/fileUpload.png" alt="File Upload" width="80%" /> </div>
+
+## 📸 功能概览 | Gallery
+
+| 模型设置                                                     | 主题切换                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------ |
+| <img src="./docs/images/model.png" width="100%" alt="Model Settings"> | <img src="./docs/images/theme.png" width="100%" alt="Theme Settings"> |
+| **数据管理**                                                 | **账号管理**                                                 |
+| <img src="./docs/images/data.png" width="100%" alt="Data Management"> | <img src="./docs/images/account.png" width="100%" alt="Account Management"> |
+
+## 🛠 技术栈 | Tech Stack
+
+### 前端 (Frontend)
+
+- **核心框架**: [Vue 3](https://vuejs.org/) (Composition API)
+- **语言**: [TypeScript](https://www.typescriptlang.org/)
+- **构建工具**: [Vite](https://vitejs.dev/)
+- **UI 框架**: [Tailwind CSS](https://tailwindcss.com/) + [shadcn-vue](https://www.shadcn-vue.com/)
+- **状态管理**: [Pinia](https://pinia.vuejs.org/)
+- **性能优化**: vue-virtual-scroller
+- **国际化**: Vue I18n
+
+### 后端 (Backend)
+
+- **框架**: [Django](https://www.djangoproject.com/) (Rest Framework)
+
+## 📂 项目结构 | Project Structure
+
+```
+src/
+├── api/                # API 接口定义与统一管理
+├── assets/             # 静态资源
+├── components/         # 公共组件
+│   ├── ai-elements/    # AI 特定组件
+│   ├── chatArea/       # 聊天主区域组件
+│   ├── sidebar/        # 侧边栏会话列表
+│   └── ui/             # shadcn 通用 UI 组件
+├── i18n/               # 国际化配置
+├── lib/                # 工具库 (utils)
+├── locales/            # 语言包文件
+├── router/             # 路由配置
+├── store/              # Pinia 状态管理
+│   └── modules/        # 状态模块 (chat, model, setting, user)
+├── style/              # 全局样式
+├── utils/              # 辅助函数
+├── views/              # 页面视图
+│   ├── ChatView/       # 聊天主视图
+│   └── 404/            # 404 页面
+├── App.vue             # 根组件
+├── main.ts             # 入口文件
+└── permission.ts       # 权限控制
+```
+
+## 🏁 快速开始 | Getting Started
+
+### 环境要求
+
+- Node.js >= 18
+- pnpm (推荐) 或 npm/yarn
+
+### 1. 克隆项目
+
+```
+git clone [https://github.com/ShaneChing7/Shimmer-AIChatBot.git](https://github.com/ShaneChing7/Shimmer-AIChatBot.git)
+cd Shimmer-AIChatBot
+```
+
+### 2. 安装依赖
+
+```
 pnpm install
+```
 
+### 3. 环境配置
 
-3. 环境配置
+在项目根目录创建 `.env` 文件：
 
-复制环境变量文件并配置你的后端地址：
+```
+VITE_API_BASE_URL=http://your-django-backend-api
+```
 
-cp .env.development .env.local
+### 4. 启动开发服务器
 
-
-修改 .env.local 文件：
-
-# 你的 Django 后端 API 地址
-VITE_API_BASE_URL=http://localhost:8000/api
-
-
-4. 启动开发服务器
-
+```
 pnpm dev
+```
 
+访问 `http://localhost:5173` 即可。
 
-访问 http://localhost:5173 即可看到项目。
+## ⚙️ 配置说明 | Configuration
 
-⚙️ 配置说明
+1. **API Key 设置**: 项目启动后，在设置面板输入 DeepSeek API Key (本地存储)。
+2. **后端连接**: 确保 Django 后端服务已启动并配置正确。
 
-首次访问时，请点击设置图标，在设置面板中填入你的 DeepSeek API Key。
+## 🤝 贡献 | Contributing
 
-Key 将存储在你的本地浏览器 LocalStorage 中。
+欢迎提交 Pull Request 或 Issue！
 
-📦 构建生产环境
+## 📄 许可证 | License
 
-pnpm build
+本项目遵循 [MIT License](https://www.google.com/search?q=LICENSE) 许可证。
 
-
-构建完成后，静态文件将生成在 dist 目录中。
-
-🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
-
-Fork 本仓库
-
-新建 Feat_xxx 分支
-
-提交代码
-
-新建 Pull Request
-
-📄 License
-
-MIT License © 2024 Shane
+Designed with ❤️ by [Shane](https://github.com/ShaneChing7)

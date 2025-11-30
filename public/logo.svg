@@ -1,0 +1,47 @@
+<svg id="logoA-svg" viewBox="0 0 200 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <style>
+        /* ---------------- Light Mode ---------------- */
+        .icon-bg {
+            fill: url(#gradLightLogo);
+        }
+        .icon-shape, .logo-text {
+            fill: #1e293b; /* slate-800 */
+        }
+
+        /* ---------------- Dark Mode ---------------- */
+        @media (prefers-color-scheme: dark) {
+            .icon-bg {
+                fill: url(#gradDarkLogo);
+            }
+            .icon-shape, .logo-text {
+                fill: white;
+            }
+        }
+    </style>
+
+    <!-- Icon Circle -->
+    <circle class="icon-bg" cx="24" cy="24" r="20"></circle>
+
+    <!-- Middle Shape -->
+    <path class="icon-shape" d="M24 10 C24 10 27 21 38 24 C27 27 24 38 24 38 C24 38 21 27 10 24 C21 21 24 10 24 10 Z"></path>
+
+    <!-- Text -->
+    <text x="56" y="32" class="logo-text"
+          font-family="Inter, sans-serif" font-weight="700" font-size="24" letter-spacing="-0.5">
+        Shimmer
+    </text>
+
+    <defs>
+        <!-- Light Mode Gradient -->
+        <linearGradient id="gradLightLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#e2e8f0"></stop> <!-- slate-200 -->
+            <stop offset="100%" stop-color="#94a3b8"></stop> <!-- slate-400 -->
+        </linearGradient>
+
+        <!-- Dark Mode Gradient -->
+        <linearGradient id="gradDarkLogo" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#334155"></stop>
+            <stop offset="100%" stop-color="#0f172a"></stop>
+        </linearGradient>
+    </defs>
+</svg>
