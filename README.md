@@ -1,8 +1,25 @@
-<div align="center"> <img src="./public/logo.svg" alt="Shimmer AI ChatBot Logo" width="120" height="120" /> </div>
+<div align="center"> <img src="./public/logo.svg" alt="Shimmer AI ChatBot Logo" width="220" height="220" /> </div>
 
 <h1 align="center">Shimmer AI ChatBot</h1>
 
-<p align="center"> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Vue.js-3.x-4FC08D%3Fstyle%3Dflat-square%26logo%3Dvue.js" alt="Vue 3" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/TypeScript-Ready-3178C6%3Fstyle%3Dflat-square%26logo%3Dtypescript" alt="TypeScript" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/Vite-Fast-646CFF%3Fstyle%3Dflat-square%26logo%3Dvite" alt="Vite" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/DeepSeek-Integration-blue%3Fstyle%3Dflat-square" alt="DeepSeek" /> </a> <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot"> <img src="https://www.google.com/search?q=https://img.shields.io/badge/License-MIT-yellow%3Fstyle%3Dflat-square" alt="License" /> </a> </p>
+<p align="center">
+  <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot">
+    <img src="https://img.shields.io/badge/Vue.js-3.x-4FC08D?style=flat-square&logo=vue.js" alt="Vue 3" />
+  </a>
+  <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot">
+    <img src="https://img.shields.io/badge/TypeScript-Ready-3178C6?style=flat-square&logo=typescript" alt="TypeScript" />
+  </a>
+  <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot">
+    <img src="https://img.shields.io/badge/Vite-Fast-646CFF?style=flat-square&logo=vite" alt="Vite" />
+  </a>
+  <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot">
+    <img src="https://img.shields.io/badge/DeepSeek-Integration-blue?style=flat-square" alt="DeepSeek" />
+  </a>
+  <a href="https://github.com/ShaneChing7/Shimmer-AIChatBot">
+    <img src="https://img.shields.io/badge/License-MIT-yellow?style=flat-square" alt="License" />
+  </a>
+</p>
+
 
 <p align="center"> 一个基于 Vue 3 + TypeScript + Django 构建的现代化 AI 对话应用。
 
