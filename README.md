@@ -82,7 +82,8 @@
 
 ### 后端 (Backend)
 
-- **框架**: [Django](https://www.djangoproject.com/) (Rest Framework)
+- **框架**：Django + Django REST Framework
+- **后端仓库**：👉 [Shimmer-AIChatBot Backend](https://github.com/ShaneChing7/Shimmer-AIChatBot_backend)
 
 ## 📂 项目结构 | Project Structure
 
