@@ -1,5 +1,3 @@
-// src/api/user/type.ts
-
 // 定义通用返回类型
 export interface ResponseData<T = any> {
   code: number
@@ -53,19 +51,19 @@ export type UserInfoResponseData = ResponseData<{
   id: number
   username: string
   email: string
-  avatar: string      // 通常是相对路径或完整路径
+  avatar: string     
   avatar_url?: string // 后端 SerializerMethodField 返回的完整 URL
   uid: string
 }>
 
-// 更新用户信息请求体
+// 用户信息请求体
 export interface UserInfoUpdateData {
   // 用户名不能改，也可以删除 username
   email: string
-  avatar?: string | File   // 如果前端支持更新头像，这里也可以放 File
+  avatar?: string | File   
 }
 
-// 更新用户信息返回数据
+// 用户信息返回数据
 export type UserInfoUpdateResponseData = ResponseData<{
   id: number
   username: string

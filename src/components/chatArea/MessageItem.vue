@@ -1,6 +1,6 @@
 <template>
   <div class="flex w-full mb-4 px-4 mt-2.5" :class="message.sender === 'user' ? 'justify-end' : 'justify-start'">
-    <!-- 🤖 AI 消息  -->
+    <!--  AI 消息  -->
     <div v-if="message.sender === 'ai'" class="flex items-start max-w-[70%] gap-3">
       <div class="flex flex-col w-full">
         <div class="bg-white-200 text-gray-900 dark:text-white dark:bg-muted rounded-2xl rounded-bl-sm px-4 py-2 text-sm leading-relaxed shadow-lg">
@@ -142,7 +142,7 @@
     </div>
 
     <!-- ----------------------------------------------------------------------- -->
-    <!-- 👤 User 消息  -->
+    <!--  User 消息  -->
     <!-- ----------------------------------------------------------------------- -->
     <div v-else class="flex items-start max-w-[70%] gap-3 flex-row-reverse">
       <Avatar class="w-10 h-10 shrink-0">
@@ -251,7 +251,7 @@ const props = defineProps<{
 }>()
 
 // --------------------------------------------------------
-// 📂 文件相关逻辑
+// 文件相关逻辑
 // --------------------------------------------------------
 
 const previewImage = ref<string | null>(null)
@@ -260,11 +260,11 @@ const previewImage = ref<string | null>(null)
 const allFiles = computed(() => {
   const files: MessageFile[] = [];
   
-  // 1. 优先使用新的多文件数组
+  // 优先使用新的多文件数组
   if (props.message.files && props.message.files.length > 0) {
     return props.message.files;
   } 
-  // 2. 兼容旧的单文件字段
+  // 兼容旧的单文件字段
   else if (props.message.file_url) {
     files.push({ 
       id: props.message.id, 
@@ -326,14 +326,14 @@ const closePreview = () => {
 }
 
 // --------------------------------------------------------
-// 🤖  AI 消息逻辑
+// AI 消息逻辑
 // --------------------------------------------------------
 
 // AI 逻辑
 const { regeneratingMessageId } = storeToRefs(chatStore)
 
 // 判断是否正在流式传输 (包括普通生成和重新生成)
-// 注意：现在 chatStore.isGenerating(sessionId) 是更准确的判断，但这里我们只能拿到 messageId
+// 现在 chatStore.isGenerating(sessionId) 是更准确的判断，但这里我们只能拿到 messageId
 // 结合 chatStore 状态来判断
 const isStreaming = computed(() => {
     // 1. 如果是临时消息 (id < 0) 且当前会话正在生成，视为 streaming

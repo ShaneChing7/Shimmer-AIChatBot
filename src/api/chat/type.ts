@@ -1,5 +1,3 @@
-// api/chat/type.ts
-
 // 定义通用返回类型
 export interface ResponseData<T = any> {
   code: number
@@ -46,7 +44,7 @@ export interface ChatMessage {
   created_at: string // 创建时间
   reasoning_content?: string;  // DeepSeek Reasoner 的推理过程
   
-  //  新增: 消息状态
+  //   消息状态
   status?: MessageStatus;
 
   // 支持多文件 (兼容旧的单文件 file_url)

@@ -1,6 +1,6 @@
 <template>
   <Teleport to="body">
-    <!-- 1. 遮罩层 -->
+    <!-- 遮罩层 -->
     <transition name="fade">
       <div 
         v-if="visible" 
@@ -9,7 +9,7 @@
       ></div>
     </transition>
 
-    <!-- 2. 模态框主体 -->
+    <!-- 模态框主体 -->
     <transition name="fade-scale">
       <div 
         v-if="visible"
@@ -38,7 +38,7 @@
 
             <div class="space-y-4">
 
-              <!-- 1. 邮箱卡片 (复制) -->
+              <!-- 邮箱卡片 (复制) -->
               <div>
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1 mb-2 block">
                   {{ t('contact.emailLabel') }}
@@ -64,7 +64,7 @@
                 </div>
               </div>
 
-              <!-- 2. Telegram 卡片 (使用本地图片) -->
+              <!-- Telegram 卡片 (使用本地图片) -->
               <div>
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1 mb-2 block">
                   {{ t('contact.telegramLabel') }}
@@ -91,7 +91,7 @@
                 </div>
               </div>
 
-              <!-- 3. WeChat 卡片 (使用本地图片) -->
+              <!-- WeChat 卡片 (使用本地图片) -->
               <div>
                 <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider ml-1 mb-2 block">
                   {{ t('contact.wechatLabel') }}
@@ -191,7 +191,6 @@ const openTelegram = () => {
 
 
 <style scoped>
-/* 动画样式保持不变 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
 

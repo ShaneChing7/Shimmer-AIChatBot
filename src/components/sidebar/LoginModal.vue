@@ -28,7 +28,6 @@
         </div>
       </div>
 
-      <!-- 表单区域：移除 space-y-5，改为手动控制 margin 以配合动画 -->
       <div class="flex flex-col">
 
         <div class="flex flex-col space-y-1.5 mb-5">
@@ -112,7 +111,6 @@ import { useI18n } from 'vue-i18n'
 import { ref, reactive, watch } from 'vue';
 import { X, Loader2 } from 'lucide-vue-next';
 import type { RegisterFormData } from '@/api/user/type';
-// 假设您已经引入了您的用户 Store
 import useUserStore from '@/store/modules/user'; 
 import { useChatStore } from '@/store/modules/chat';
 // 引入 vue-sonner 的 toast 函数
@@ -257,7 +255,7 @@ watch([() => props.visible, isLoginMode], ([newVisible]) => {
   transform: scale(0.95);
 }
 
-/* 新增：输入框折叠动画 (Expand)
+/* 输入框折叠动画 (Expand)
   结合了 max-height 和 margin-bottom 的动画，确保布局平滑
 */
 .expand-enter-active,
@@ -276,7 +274,7 @@ watch([() => props.visible, isLoginMode], ([newVisible]) => {
   transform: translateY(-10px);
 }
 
-/* 新增：文字淡入淡出 (Fade)
+/* 文字淡入淡出 (Fade)
   用于标题和按钮文字的平滑切换
 */
 .fade-enter-active,

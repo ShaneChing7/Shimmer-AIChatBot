@@ -1,14 +1,3 @@
-<script setup>
-/**
- * Shimmer Logo Component (Vue 3)
- * 包含图标和 "Shimmer" 品牌文字
- */
-
-// 生成随机 ID 以防止渐变冲突
-const uniqueId = Math.random().toString(36).substr(2, 9);
-const gradientId = `logoGrad-${uniqueId}`;
-</script>
-
 <template>
   <!-- 
     viewBox="0 0 200 48" 设定了 4:1 的长宽比
@@ -35,11 +24,6 @@ const gradientId = `logoGrad-${uniqueId}`;
     />
     
     <!-- 文字部分 -->
-    <!-- 
-      注意：这里使用系统字体栈渲染文字。
-      如果您的项目引入了 Inter 字体，它会自动应用。
-      如果没有，它会回退到 sans-serif，依然保持整洁。
-    -->
     <text 
       x="60" 
       y="32" 
@@ -54,3 +38,10 @@ const gradientId = `logoGrad-${uniqueId}`;
     </text>
   </svg>
 </template>
+
+<script setup>
+
+// 生成随机 ID 以防止渐变冲突
+const uniqueId = Math.random().toString(36).substr(2, 9);
+const gradientId = `logoGrad-${uniqueId}`;
+</script>

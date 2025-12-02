@@ -16,7 +16,7 @@ router.beforeEach(async (to: any, from: any, next: any) => {
   //from：从哪个路由来
 
   //next：路由的放行函数
-  document.title = `${website.title} - ${to.meta.title}`;
+  document.title = `${website.title} | ${to.meta.title}`;
   const token = userStore.token;
   const username = userStore.username;
   if (token) {

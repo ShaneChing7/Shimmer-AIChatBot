@@ -1,6 +1,4 @@
-// src/api/model/type.ts
-
-// 引用通用的 ResponseData，如果没有通用定义文件，可以在这里重新定义
+// 引用通用的 ResponseData
 export interface ResponseData<T = any> {
   code: number
   message: string

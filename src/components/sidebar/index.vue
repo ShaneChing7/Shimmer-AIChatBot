@@ -134,7 +134,7 @@ import Session from './Session.vue';
 import CollapseButton from './CollapseButton.vue';
 import UserMenu from './UserMenu.vue';
 import SettingsModal from './SettingsModal.vue';
-import ContactUsModal from './ContactUsModal.vue'; // 引入新组件
+import ContactUsModal from './ContactUsModal.vue'; 
 import LoginModal from './LoginModal.vue';
 import { Ellipsis, SquarePen } from "lucide-vue-next";
 import { toast } from 'vue-sonner';
@@ -174,7 +174,7 @@ const BUFFER_SIZE = 3;  // 上下缓冲项数
 
 const scrollTop = ref(0);
 const containerHeight = ref(0);
-//  新增: 保存折叠前的滚动位置
+//  保存折叠前的滚动位置
 const savedScrollTop = ref(0);
 
 // 计算可见范围
@@ -202,7 +202,7 @@ const offsetBottom = computed(() => {
   return (sessions.value.length - visibleRange.value.end) * ITEM_HEIGHT;
 });
 
-//  新增: 滚动到指定 Session
+// 滚动到指定 Session
 const scrollToSession = (sessionId: number) => {
   const index = sessions.value.findIndex(s => s.id === sessionId);
   if (index === -1 || !scrollContainer.value) return;
@@ -214,7 +214,7 @@ const scrollToSession = (sessionId: number) => {
   scrollTop.value = targetScrollTop;
 }
 
-//  新增: 恢复滚动位置
+//  恢复滚动位置
 const restoreScrollPosition = () => {
   if (!scrollContainer.value) return;
   
@@ -267,7 +267,7 @@ watch([isExpanded, scrollContainer], async ([expanded, container]) => {
     // 初始化容器高度
     containerHeight.value = container.clientHeight;
     
-    //   关键: 恢复滚动位置
+    //    恢复滚动位置
     await nextTick(); // 再等一次,确保 DOM 完全渲染
     restoreScrollPosition();
     
@@ -308,7 +308,7 @@ const selectSession = async (sessionId: number) => {
   await chatStore.fetchSessionDetail(sessionId);
 
   
-  // 注意: 滚动由 watch(currentSession) 自动处理
+  // 滚动由 watch(currentSession) 自动处理
 }
 
 const addSession = async () => {

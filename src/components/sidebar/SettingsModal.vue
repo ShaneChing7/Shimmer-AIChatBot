@@ -34,7 +34,6 @@
                         
                         <!-- General Tab -->
                         <div v-if="activeTab === 'general'" class="space-y-6 animate-fade-in">
-                            <!-- ... existing general content ... -->
                             <div class="space-y-4">
                                 <div class="flex flex-col justify-between">
                                     <span class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3 block">{{ t('settings.general.theme') || 'Appearance' }}</span>
@@ -175,7 +174,7 @@
                                 </div>
                             </div>
 
-                            <!-- Danger Zone (Moved Here) -->
+                            <!-- Danger Zone -->
                             <div class="space-y-2 pt-6">
                                 <span class="text-xs font-semibold text-red-400 dark:text-red-500 uppercase tracking-wider ml-1">{{ t('settings.data.dangerZone') }}</span>
                                 <div class="border border-red-100 dark:border-red-900/50 bg-red-50/30 dark:bg-red-900/10 rounded-xl p-4 flex items-center justify-between">
@@ -225,7 +224,6 @@
                                     
                                     
 
-                                    <!-- Modified: Local Cache -> Delete All Chats -->
                                     <div class="p-4 flex items-center justify-between bg-white dark:bg-gray-800/30">
                                         <div class="flex items-center gap-3">
                                             <div class="bg-gray-100 dark:bg-gray-700 p-2 rounded-lg">
@@ -247,7 +245,7 @@
                             <!-- Danger Zone Removed from here and moved to Account Tab -->
                         </div>
 
-                        <!-- Model Tab (Replaces Data Tab) -->
+                        <!-- Model Tab  -->
                         <div v-else-if="activeTab === 'model'" class="animate-fade-in space-y-6">
                             
                             <!-- Header Info -->
@@ -334,7 +332,6 @@
 
                         <!-- Terms Tab -->
                         <div v-else-if="activeTab === 'terms'" class="animate-fade-in h-full flex flex-col">
-                            <!-- ... existing terms content ... -->
                             <div class="flex-1 bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-800 overflow-y-auto text-sm text-gray-600 dark:text-gray-400 leading-relaxed custom-scrollbar">
                                 <h3 class="text-gray-900 dark:text-gray-100 font-bold mb-2">{{t('settings.terms.serviceTitle')}}</h3>
                                 <p class="mb-4">{{t('settings.terms.serviceContent')}}</p>
@@ -426,7 +423,7 @@
                         </div>
                     </div>
 
-                     <!-- NEW: Delete All Chats Confirmation Modal -->
+                     <!-- Delete All Chats Confirmation Modal -->
                     <div v-if="showDeleteChatsModal" class="absolute inset-0 z-20 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm flex items-center justify-center p-6 animate-fade-in">
                         <div class="w-full max-w-sm bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 relative">
                             <div class="absolute top-4 right-4 p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer" @click="closeDeleteChatsModal">
@@ -469,14 +466,12 @@ import {
     Settings, User, Database, FileText, X, Sun, Moon, Monitor, 
     ChevronDown, Check, LogOut, KeyRound, ChevronRight,
     Camera,  Download, ShieldAlert, Trash2,
-    BrainCircuit, RefreshCw, Eye, EyeOff, ExternalLink // Added Icons
+    BrainCircuit, RefreshCw, Eye, EyeOff, ExternalLink
 } from 'lucide-vue-next'
 import { useI18n } from 'vue-i18n'
 import dayjs from 'dayjs'
-// 导入 Store
 import useUserStore from '@/store/modules/user'
 import { useChatStore } from "@/store/modules/chat";
-// 引入 Model Store 和 storeToRefs
 import useModelStore from '@/store/modules/model'
 import { storeToRefs } from 'pinia'
 import { toast } from 'vue-sonner';
@@ -488,7 +483,7 @@ const { t, locale } = useI18n()
 defineProps<{ visible: boolean }>();
 const emit = defineEmits<{ (e: 'update:visible', val: boolean): void }>();
 
-// -------------------- 语言和主题逻辑 (保持不变) --------------------
+// -------------------- 语言和主题逻辑  --------------------
 const languageOptions = [
     { value: 'zh-CN', label: '中文' },
     { value: 'en', label: 'English' },
@@ -548,7 +543,7 @@ const menuItems = computed(() => {
 
 const activeTab = ref('general');
 
-// 关键逻辑：监听 activeTab 变化，切换 Tab 时关闭所有子模态框
+// 监听 activeTab 变化，切换 Tab 时关闭所有子模态框
 watch(activeTab, () => {
     closePasswordModal();
     closeDeleteAccountModal();
@@ -719,7 +714,7 @@ const submitDeleteAccount = async () => {
     }
 };
 
-// -------------------- 业务逻辑：删除所有对话 (新增) --------------------
+// -------------------- 业务逻辑：删除所有对话--------------------
 const showDeleteChatsModal = ref(false);
 const isDeletingChats = ref(false);
 
@@ -744,7 +739,7 @@ const confirmDeleteAllChats = async () => {
     }
 };
 
-// -------------------- 业务逻辑：导出所有数据 (新增) --------------------
+// -------------------- 业务逻辑：导出所有数据 --------------------
 const isExporting = ref(false);
 
 const handleExportData = async () => {

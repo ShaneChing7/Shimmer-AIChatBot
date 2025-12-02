@@ -1,17 +1,3 @@
-<script setup>
-import { useRouter } from 'vue-router';
-import { useI18n } from 'vue-i18n'
-const { t } = useI18n()
-// 如果您已经创建了 ShimmerLogo，也可以引入它放在左上角
-// import ShimmerLogo from './components/ShimmerLogo.vue'; 
-
-const router = useRouter();
-
-const goHome = () => {
-  router.push('/');
-};
-</script>
-
 <template>
   <div class="relative min-h-screen w-full bg-slate-950 flex flex-col items-center justify-center overflow-hidden selection:bg-indigo-500/30">
     
@@ -34,7 +20,7 @@ const goHome = () => {
         <div class="absolute inset-4 rounded-full border border-slate-600/40 animate-[ping_3s_ease-out_infinite_1s] opacity-20"></div>
         <div class="absolute inset-8 rounded-full border border-slate-500/30 animate-[ping_3s_ease-out_infinite_2s] opacity-20"></div>
         
-        <!-- 核心 Shimmer 图标 (稍微调暗，表示离线/丢失状态) -->
+        <!-- 核心 Shimmer 图标  -->
         <div class="relative w-24 h-24 rounded-full bg-slate-900 shadow-[0_0_40px_-10px_rgba(255,255,255,0.1)] border border-slate-800 flex items-center justify-center group">
           <svg viewBox="0 0 64 64" fill="none" class="w-16 h-16 opacity-80 group-hover:opacity-100 transition-opacity duration-500">
              <path d="M32 12 C32 12 36 28 52 32 C36 36 32 52 32 52 C32 52 28 36 12 32 C28 28 32 12 32 12 Z" fill="#94a3b8" class="animate-pulse">
@@ -82,5 +68,16 @@ const goHome = () => {
 </template>
 
 <style scoped>
-/* 如果您没有在 tailwind.config.js 中配置 ping 动画的时长，这里可以微调，或者直接使用上面的任意类 */
 </style>
+
+<script setup>
+import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n'
+const { t } = useI18n()
+
+const router = useRouter();
+
+const goHome = () => {
+  router.push('/');
+};
+</script>

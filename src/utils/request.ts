@@ -1,6 +1,6 @@
 //进行axios二次封装：请求与响应拦截器
 import axios from 'axios'
-import pinia from '@/store'; // 1. 导入 pinia 实例
+import pinia from '@/store'; 
 import router from '@/router'
 import useUserStore from '@/store/modules/user'
 import { useChatStore } from '@/store/modules/chat';
@@ -12,15 +12,15 @@ const request = axios.create({
 })
 
 request.interceptors.request.use((config) => {
-	// 4. 在拦截器函数内部获取 store 实例
+	//  在拦截器函数内部获取 store 实例
     const token = localStorage.getItem('TOKEN')
-    // b. 如果存在 Token，则添加到请求头中
+    // 如果存在 Token，则添加到请求头中
     if (token) {
       // 按照 Simple JWT 要求的格式添加 'Authorization: Bearer <token>'
       config.headers['Authorization'] = `Bearer ${token}`;
     }
     
-    // c. 务必返回 config 对象
+    // 务必返回 config 对象
     return config;
   },
   (error) => {
@@ -32,12 +32,6 @@ request.interceptors.response.use(
 	(response) => {
         // 获取后端返回的数据
         const res = response.data;
-
-        // -------------------------------------------------------------
-        // 核心改动：集中处理业务状态码 (Business Logic Errors)
-        // -------------------------------------------------------------
-        // 假设 200, 201, 204 代表成功
-        // 注意：根据你后端的实际返回调整这里的判断条件
         if (res.code === 200 || res.code === 201 || res.code === 204) {
              return res;
         } else {
@@ -51,7 +45,6 @@ request.interceptors.response.use(
         }
 	},
 	(error) => {
-		// 6. 响应失败时，也获取 store 实例
         const userStore = useUserStore(pinia);
         const chatStore = useChatStore(pinia);
         
@@ -88,9 +81,6 @@ request.interceptors.response.use(
 				break
 		}
 
-        // -------------------------------------------------------------
-        // 核心改动：集中显示 HTTP 错误提示
-        // -------------------------------------------------------------
 		toast.error(message)
 
 		return Promise.reject(error)

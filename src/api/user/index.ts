@@ -1,4 +1,3 @@
-// src/api/user/index.ts
 import request from '@/utils/request'
 import type {
   LoginFormData,

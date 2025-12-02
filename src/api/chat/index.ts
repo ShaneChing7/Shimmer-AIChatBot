@@ -1,11 +1,9 @@
-// index.ts
-
 import request from '@/utils/request' 
 import type {
   // ... (保留原有的 User/Auth 导入)
   ResponseData,
   
-  // 导入新增的 Chat 类型
+  // Chat 类型
   ChatSession,
   ChatSessionListResponseData,
   ChatSessionCreateData,
@@ -13,7 +11,7 @@ import type {
   ChatMessageCreateData,
   ChatMessageCreateResponseData,
   ChatSessionDetailResponseData, 
-  ChatSessionExportResponseData, // 新增
+  ChatSessionExportResponseData, 
 } from './type'
 
 // -------------------- API 地址 --------------------
@@ -54,18 +52,6 @@ export const reqChatSessionDetail = (sessionId: number) =>
 
 
 /**
- * 发送消息并获取 AI 回复 (POST /api/sessions/{pk}/messages/)
- * @param sessionId - 会话 ID (即 URL 中的 pk)
- * @param data - 包含用户消息内容
- * @returns AI 的回复消息对象
- */
-export const reqChatMessageCreate = (sessionId: number, data: ChatMessageCreateData) =>
-  request.post<any, ChatMessageCreateResponseData>(
-    `${API.CHAT_SESSIONS_URL}${sessionId}/messages/`, // 动态拼接 URL
-    data
-  )
-
-/**
  * 删除聊天会话 (DELETE /api/sessions/{pk}/)
  * @param sessionId - 会话 ID
  */
@@ -87,7 +73,7 @@ export const reqUpdateSessionTitle = (sessionId: number, data: ChatSessionCreate
   )
 
 /**
- * 新增: 删除所有会话 (DELETE /api/sessions/delete-all/)
+ * 删除所有会话 (DELETE /api/sessions/delete-all/)
  */
 export const reqDeleteAllSessions = () =>
   request.delete<any, ResponseData<any>>(
@@ -95,7 +81,7 @@ export const reqDeleteAllSessions = () =>
   )
 
 /**
- * 新增: 导出所有数据 (GET /api/sessions/export-data/)
+ * 导出所有数据 (GET /api/sessions/export-data/)
  */
 export const reqExportAllSessions = () =>
   request.get<any, ChatSessionExportResponseData>(

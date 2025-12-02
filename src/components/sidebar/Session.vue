@@ -84,7 +84,7 @@ const props = defineProps<{
    isActive: boolean; // 用于高亮当前选中的会话
 }>();
 
-//  核心修改：添加 'select-session' 事件
+// 添加 'select-session' 事件
 const emit = defineEmits<{
     (e: 'delete', id: number): void;
     (e: 'select-session', id: number): void; // 新增事件

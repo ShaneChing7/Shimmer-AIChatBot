@@ -1,4 +1,3 @@
-// src/store/modules/user.ts
 import { defineStore } from 'pinia'
 // api接口传入和接收的数据类型
 import type { 
@@ -41,11 +40,6 @@ const useUserStore = defineStore('User', {
   }),
 
   actions: {
-    // ------------------------------------------------------------------
-    // 重构说明：
-    // 1. 移除了 if (result.code === 200) 判断，因为拦截器已处理
-    // 2. 移除了 else { Promise.reject(...) }，拦截器会自动抛出错误
-    // ------------------------------------------------------------------
 
     // 用户注册
     async userRegister(data: RegisterFormData) {

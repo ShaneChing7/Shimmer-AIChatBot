@@ -1,4 +1,3 @@
-// src/store/modules/model.ts
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { reqCheckDeepSeekUsage } from '@/api/model'
@@ -22,7 +21,7 @@ export const useModelStore = defineStore('model', () => {
   const hasKey = computed(() => !!apiKey.value && apiKey.value.length > 0)
   const formattedBalance = computed(() => `${balance.value} ${currency.value}`)
 
-  // ✅ 新增: 估算剩余 Token 数 (基于 DeepSeek-V3 价格估算)
+  //  估算剩余 Token 数 (基于 DeepSeek-V3 价格估算)
   // 参考价格: 1元 ≈ 50万 Tokens (取输入输出的混合平均保守值)
   const estimatedTokens = computed(() => {
     const bal = parseFloat(balance.value)

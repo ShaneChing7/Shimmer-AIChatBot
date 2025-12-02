@@ -1,16 +1,3 @@
-<script setup>
-/**
- * Shimmer AI Avatar Component (Vue 3)
- * 替换原有的 Lucide Sparkle 图标
- */
-
-// 生成一个随机 ID 后缀，防止页面上存在多个 Avatar 时渐变 ID 冲突
-// 注意：如果您的 Vue 版本是 3.5+，可以直接使用 import { useId } from 'vue'; const uniqueId = useId();
-const uniqueId = Math.random().toString(36).substr(2, 9);
-const gradientId = `shimmerBg-${uniqueId}`;
-const filterId = `glow-${uniqueId}`;
-</script>
-
 <template>
   <!-- 
     Vue 3 的透传特性 (Fallthrough Attributes)：
@@ -65,3 +52,10 @@ const filterId = `glow-${uniqueId}`;
     </g>
   </svg>
 </template>
+
+<script setup>
+
+const uniqueId = Math.random().toString(36).substr(2, 9);
+const gradientId = `shimmerBg-${uniqueId}`;
+const filterId = `glow-${uniqueId}`;
+</script>
