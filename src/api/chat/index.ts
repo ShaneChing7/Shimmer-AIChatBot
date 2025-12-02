@@ -1,15 +1,10 @@
 import request from '@/utils/request' 
 import type {
-  // ... (保留原有的 User/Auth 导入)
   ResponseData,
-  
-  // Chat 类型
   ChatSession,
   ChatSessionListResponseData,
   ChatSessionCreateData,
   ChatSessionCreateResponseData,
-  ChatMessageCreateData,
-  ChatMessageCreateResponseData,
   ChatSessionDetailResponseData, 
   ChatSessionExportResponseData, 
 } from './type'
