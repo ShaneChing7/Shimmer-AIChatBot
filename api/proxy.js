@@ -11,15 +11,12 @@ export default async function handler(req, res) {
       return res.status(500).json({ message: 'Backend URL not configured' });
     }
 
-    // 1. 去掉 /api 前缀，保留后续路径
-    // 例如：/api/sessions/ -> /sessions/
-    const path = req.url.replace(/^\/api/, '');
+    let path = req.url;
     
-    // 2. 拼接真实后端地址
-    // 确保 backend 没有尾部斜杠，path 确保有头部斜杠
-    const targetURL = backend.replace(/\/$/, '') + path;
+    const targetBackend = backend.replace(/\/$/, '');
+    const targetURL = targetBackend + path; 
 
-    console.log(`[Proxy] Forwarding to: ${targetURL}`);
+    console.log(`[Proxy] Forwarding ${req.method} ${path} -> ${targetURL}`);
 
     // 3. 专门处理 SSE 流式响应 (AI 对话核心)
     if (path.includes('messages-stream') || path.includes('regenerate')) {
