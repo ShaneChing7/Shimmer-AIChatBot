@@ -4,43 +4,52 @@ export const config = {
 
 export default async function handler(req, res) {
   try {
-    const backend = process.env.REAL_API_URL; 
-    
+    const backend = process.env.REAL_API_URL;
     if (!backend) {
       return res.status(500).json({ message: 'Backend URL not configured' });
     }
 
-    // req.url 在 Vercel 中通常是 "/api/auth/token/"
-    const path = req.url; 
+    // ===============================================
+    // 1. 智能处理 URL 拼接 (防止 /api 重复)
+    // ===============================================
+    
+    // 获取请求路径，例如: "/api/auth/token/"
+    const requestPath = req.url;
 
-    // 拼接目标 URL
-    // 确保 backend 没有尾部斜杠，防止出现 //api/...
-    const targetBackend = backend.replace(/\/$/, '');
-    const targetURL = targetBackend + path;
+    // 清理后端地址：
+    // 1. 去掉末尾斜杠
+    // 2. 如果用户手误在环境变量里写了 /api，也去掉，防止变成 /api/api/...
+    let targetBase = backend.replace(/\/$/, ''); 
+    if (targetBase.endsWith('/api')) {
+        targetBase = targetBase.slice(0, -4);
+    }
 
-    console.log(`[Proxy] Forwarding: ${path} -> ${targetURL}`);
+    // 最终拼接：http://8.137...:8000 + /api/auth/token/
+    const targetURL = targetBase + requestPath;
 
-    // --- SSE 流式处理 (保持不变) ---
-    if (path.includes('messages-stream') || path.includes('regenerate')) {
+    // 打印日志 (去 Vercel Dashboard -> Logs 查看)
+    console.log(`[Proxy] Forwarding: ${requestPath} -> ${targetURL}`);
+
+    // ===============================================
+    // 2. 转发逻辑
+    // ===============================================
+
+    if (requestPath.includes('messages-stream') || requestPath.includes('regenerate')) {
       return handleSSE(req, res, targetURL);
     }
 
-    // --- 普通请求处理 ---
     const headers = { ...req.headers };
-    // 删除 host，否则 Nginx 会以为你是直接访问 IP，可能会拦截
     delete headers.host; 
-    // 删除 referer 和 origin，避免 Django CSRF/CORS 校验失败 (视情况而定)
-    // headers['origin'] = targetBackend;
-    // headers['referer'] = targetBackend;
+    // 覆盖 Origin/Referer，骗过 Django 的 CSRF 检查 (如果需要)
+    // headers['origin'] = targetBase;
+    // headers['referer'] = targetBase;
 
     const init = {
       method: req.method,
       headers: headers,
     };
 
-    // 处理 Body
     if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
-      // Vercel 解析后的 body 是对象，fetch 需要字符串
       init.body = typeof req.body === 'object' ? JSON.stringify(req.body) : req.body;
     }
 
@@ -64,7 +73,7 @@ export default async function handler(req, res) {
   }
 }
 
-// ... (handleSSE 函数保持之前的代码不变) ...
+// SSE 处理函数保持不变
 async function handleSSE(req, res, targetURL) {
   const headers = { ...req.headers };
   delete headers.host;
