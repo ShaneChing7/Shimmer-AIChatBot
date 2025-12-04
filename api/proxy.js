@@ -1,40 +1,46 @@
-// api/proxy.js
 export const config = {
-  runtime: 'nodejs', // 推荐使用标准 Node.js 运行时
-  maxDuration: 60,   // 设置最大超时时间 (秒)，免费版限制 10s (Vercel 函数有时候会超时，Pro版可更高)
+  runtime: 'nodejs',
 };
 
 export default async function handler(req, res) {
   try {
-    const backend = process.env.REAL_API_URL;
+    const backend = process.env.REAL_API_URL; 
+    
     if (!backend) {
       return res.status(500).json({ message: 'Backend URL not configured' });
     }
 
-    let path = req.url;
-    
+    // req.url 在 Vercel 中通常是 "/api/auth/token/"
+    const path = req.url; 
+
+    // 拼接目标 URL
+    // 确保 backend 没有尾部斜杠，防止出现 //api/...
     const targetBackend = backend.replace(/\/$/, '');
-    const targetURL = targetBackend + path; 
+    const targetURL = targetBackend + path;
 
-    console.log(`[Proxy] Forwarding ${req.method} ${path} -> ${targetURL}`);
+    console.log(`[Proxy] Forwarding: ${path} -> ${targetURL}`);
 
-    // 3. 专门处理 SSE 流式响应 (AI 对话核心)
+    // --- SSE 流式处理 (保持不变) ---
     if (path.includes('messages-stream') || path.includes('regenerate')) {
       return handleSSE(req, res, targetURL);
     }
 
-    // 4. 处理普通请求 (GET, POST, etc.)
+    // --- 普通请求处理 ---
     const headers = { ...req.headers };
-    delete headers.host;         // 删除 host，避免后端 Nginx 报错
-    delete headers['content-length']; // 删除长度，重新计算
+    // 删除 host，否则 Nginx 会以为你是直接访问 IP，可能会拦截
+    delete headers.host; 
+    // 删除 referer 和 origin，避免 Django CSRF/CORS 校验失败 (视情况而定)
+    // headers['origin'] = targetBackend;
+    // headers['referer'] = targetBackend;
 
     const init = {
       method: req.method,
       headers: headers,
     };
 
-    // Vercel 会自动解析 body 为对象，但 fetch 需要 string
+    // 处理 Body
     if (req.method !== 'GET' && req.method !== 'HEAD' && req.body) {
+      // Vercel 解析后的 body 是对象，fetch 需要字符串
       init.body = typeof req.body === 'object' ? JSON.stringify(req.body) : req.body;
     }
 
@@ -42,15 +48,13 @@ export default async function handler(req, res) {
 
     // 转发响应头
     response.headers.forEach((value, key) => {
-      // 某些头会导致 Vercel 报错，过滤掉
-      if (!['content-encoding', 'content-length', 'transfer-encoding'].includes(key.toLowerCase())) {
+      if (!['content-encoding', 'content-length'].includes(key.toLowerCase())) {
         res.setHeader(key, value);
       }
     });
 
     res.status(response.status);
 
-    // 转发响应体
     const arrayBuffer = await response.arrayBuffer();
     res.send(Buffer.from(arrayBuffer));
 
@@ -60,14 +64,10 @@ export default async function handler(req, res) {
   }
 }
 
-// ======================
-//    SSE 流式代理核心
-// ======================
+// ... (handleSSE 函数保持之前的代码不变) ...
 async function handleSSE(req, res, targetURL) {
   const headers = { ...req.headers };
   delete headers.host;
-  
-  // 强制设置为 SSE 相关的头，防止缓存
   headers['Accept'] = 'text/event-stream';
   
   const init = {
@@ -78,33 +78,23 @@ async function handleSSE(req, res, targetURL) {
 
   try {
     const response = await fetch(targetURL, init);
-
-    // 设置响应给前端的头
     res.setHeader('Content-Type', 'text/event-stream; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-transform');
     res.setHeader('Connection', 'keep-alive');
-    res.setHeader('X-Accel-Buffering', 'no'); // 关键：禁用 Nginx 缓冲
+    res.setHeader('X-Accel-Buffering', 'no'); 
 
-    if (!response.body) {
-      res.end();
-      return;
-    }
-
-    // 使用 Node.js 的原生流管道
-    // @ts-ignore
-    const { body } = response;
-    // 将 fetch 的 web stream 转换为 node stream 并 pipe 给 res
-    const reader = body.getReader();
+    if (!response.body) { res.end(); return; }
     
+    // @ts-ignore
+    const reader = response.body.getReader();
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      res.write(value); // 实时写入数据，不要用 res.send
+      res.write(value);
     }
     res.end();
-
   } catch (error) {
-    console.error('SSE Proxy Error:', error);
-    res.end(); // 结束流
+    console.error('SSE Error:', error);
+    res.end();
   }
 }
