@@ -2,7 +2,10 @@
 import { cn } from '@/lib/utils'
 import { StreamMarkdown } from 'streamdown-vue'
 import { computed, useAttrs, useSlots } from 'vue'
-import 'katex/dist/katex.min.css'
+
+// KaTeX CSS 异步加载，不阻塞首屏渲染
+const loadKatexCSS = () => import('katex/dist/katex.min.css')
+loadKatexCSS()
 
 interface Props {
   content?: string

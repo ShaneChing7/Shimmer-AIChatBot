@@ -79,62 +79,54 @@
             tag="div" 
             class="flex gap-x-3 mr-2"
             >
-            <div 
+            <div
               v-if="isLastAiMessage && !isStreaming && message.status !== 'completed'"
               :key="'play'"
-              class="flex items-center" 
+              class="flex items-center"
             >
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('continue')">
-                      <Play :size="16" class="fill-current"></Play>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.continue')}}</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('continue')">
+                    <Play :size="16" class="fill-current"></Play>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.continue')}}</p></TooltipContent>
+              </Tooltip>
             </div>
 
             <div v-if="!isStreaming" :key="'share'" class="flex items-center">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
-                      <MessageSquareShare :size="16"></MessageSquareShare>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.share')}}</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('share')">
+                    <MessageSquareShare :size="16"></MessageSquareShare>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.share')}}</p></TooltipContent>
+              </Tooltip>
             </div>
-            
+
             <div v-if="!isStreaming" :key="'retry'" class="flex items-center">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('retry')">
-                      <RotateCw :size="16"></RotateCw>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.retry')}}</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('retry')">
+                    <RotateCw :size="16"></RotateCw>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{t('chat.retry')}}</p></TooltipContent>
+              </Tooltip>
             </div>
 
             <div v-if="!isStreaming" :key="'copy'" class="flex items-center">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger as-child>
-                    <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
-                      <Transition name="icon-fade" mode="out-in">
-                          <component :is="copySuccess ? Check : Copy" :size="16" :key="copySuccess ? 'check-icon' : 'copy-icon'" ></component>
-                      </Transition>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p></TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger as-child>
+                  <div class="flex justify-center items-center rounded-2xl h-6 w-6 hover:bg-gray-200 cursor-pointer" @click="handleAction('copy')">
+                    <Transition name="icon-fade" mode="out-in">
+                        <component :is="copySuccess ? Check : Copy" :size="16" :key="copySuccess ? 'check-icon' : 'copy-icon'" ></component>
+                    </Transition>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" class="bg-black text-white px-2 py-1 rounded-md [&_svg]:hidden!"><p>{{ copySuccess ? t('chat.copied') : t('chat.copy') }}</p></TooltipContent>
+              </Tooltip>
             </div>
           </TransitionGroup>
         </div>
@@ -235,7 +227,6 @@ import { Response } from '@/components/ai-elements/response'
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger
 } from '@/components/ui/tooltip'
 import { useChatStore } from "@/store/modules/chat"
