@@ -54,6 +54,7 @@ export const useChatStore = defineStore("chat", {
     loading: false,
     error: null,
     regeneratingMessageId: null,
+    // 注意：不对这些 Map/Set 使用 markRaw，因为需要保持与 currentSession 的引用一致性
     sessionCache: new Map(),
     abortControllers: new Map(),
     generatingSessionIds: new Set(),
@@ -600,14 +601,12 @@ export const useChatStore = defineStore("chat", {
         const decoder = new TextDecoder("utf-8");
         let buffer = "";
 
-        // let hasReceivedData = false;
-
         try {
           // 循环读取流数据块
           while (true) {
               const { done, value } = await reader.read();
               if (done) break;
-              
+
               // 解码并存入缓冲区
               buffer += decoder.decode(value, { stream: true });
               let newlineIndex;
@@ -615,18 +614,17 @@ export const useChatStore = defineStore("chat", {
               while ((newlineIndex = buffer.indexOf('\n')) !== -1) {
                   const line = buffer.slice(0, newlineIndex).trim();
                   buffer = buffer.slice(newlineIndex + 1);
-                  
+
                   // 解析 SSE 格式: data: {...}
                   if (line.startsWith('data: ')) {
                       const dataStr = line.substring(6);
                       if (dataStr === ':keepalive') continue; // 忽略心跳包
-                      
+
                       try {
                           const data = JSON.parse(dataStr);
-                          // hasReceivedData = true;
 
                           const session = this.sessionCache.get(sessionId);
-                          if (!session) break; 
+                          if (!session) break;
 
                           const msgIndex = session.messages.findIndex(m => m.id === targetMessageId);
                           if (msgIndex === -1) continue;
@@ -637,9 +635,9 @@ export const useChatStore = defineStore("chat", {
                               console.error("Stream Error Event:", data.detail);
                               if (!targetMsg) continue;
                               targetMsg.content += `\n\n> ⚠️ **API Error**: ${data.detail}\n`;
-                              targetMsg.status = 'completed'; 
+                              targetMsg.status = 'completed';
                               toast.error(`API Error: ${data.detail}`);
-                              return; 
+                              return;
                           }
 
                           // 事件类型 2: 完成
@@ -647,7 +645,7 @@ export const useChatStore = defineStore("chat", {
                               if (appendMode) {
                                   // 继续生成模式：只更新状态，不替换整个对象
                                   if (targetMsg) {
-                                      targetMsg.status = 'completed'; 
+                                      targetMsg.status = 'completed';
                                       if (data.message && data.message.id) {
                                           targetMsg.id = data.message.id; // 更新为真实 ID
                                       }
@@ -656,15 +654,15 @@ export const useChatStore = defineStore("chat", {
                                   // 普通/重试模式：使用后端返回的完整消息对象替换占位对象
                                   session.messages.splice(msgIndex, 1, { ...data.message, reasoning_content: data.reasoning || "" });
                               }
-                          } 
-                          
+                          }
+
                           // 事件类型 3: 推理内容 (DeepSeek Reasoner)
                           else if (data.type === 'reasoning') {
                               if (targetMsg) {
                                   if (!targetMsg.reasoning_content) targetMsg.reasoning_content = "";
                                   targetMsg.reasoning_content += data.content;
                               }
-                          } 
+                          }
                           // 事件类型 4: 普通内容
                           else if (data.type === 'content') {
                               if (targetMsg) {
@@ -674,7 +672,7 @@ export const useChatStore = defineStore("chat", {
                       } catch (e) {
                           console.warn("JSON Parse Error on line:", line);
                       }
-                  } 
+                  }
                   // 容错处理：有时错误信息可能直接返回 JSON 而非 SSE 格式
                   else if (line.startsWith('{') && line.endsWith('}')) {
                       try {
@@ -701,7 +699,7 @@ export const useChatStore = defineStore("chat", {
           }
         } catch (error: any) {
            console.error("Stream reading error:", error);
-           throw error; 
+           throw error;
         } finally {
             // 最终兜底检查：如果流结束但状态仍为 generating，标记为完成或错误
             const session = this.sessionCache.get(sessionId);
@@ -714,7 +712,7 @@ export const useChatStore = defineStore("chat", {
                              msg.status = 'error';
                              msg.content = "**[Connection Closed Without Response]**";
                          } else {
-                             msg.status = 'completed'; 
+                             msg.status = 'completed';
                          }
                     }
                 }

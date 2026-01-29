@@ -2,7 +2,10 @@
   <div class=" overflow-x-hidden flex flex-col h-full overflow-y-hidden">
       <Conversation>
         <ConversationContent>
-          <MessageItem v-for="msg in messages" :key="msg.id" :message="msg" />
+          <!-- TooltipProvider 提取到外层，避免每个 MessageItem 重复创建实例 -->
+          <TooltipProvider :delay-duration="200">
+            <MessageItem v-for="msg in messages" :key="msg.id" :message="msg" />
+          </TooltipProvider>
         </ConversationContent>
         <ConversationScrollButton/>
       </Conversation>
@@ -13,6 +16,7 @@
 import { ref, defineProps, nextTick, watch } from 'vue';
 import MessageItem from './MessageItem.vue';
 import { ScrollArea } from "@/components/ui/scroll-area"
+import { TooltipProvider } from "@/components/ui/tooltip"
 import {
   Conversation,
   ConversationContent,
